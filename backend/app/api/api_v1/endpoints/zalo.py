@@ -29,6 +29,39 @@ async def test_zalo():
         }
     }
 
+@router.post("/debug", response_model=ZaloPhoneResponse)
+async def debug_zalo_phone(request: ZaloPhoneRequest):
+    """Debug endpoint with detailed logging"""
+    try:
+        logger.info(f"=== DEBUG ZALO PHONE START ===")
+        logger.info(f"Request token: {request.token[:20]}...")
+        logger.info(f"Request access_token: {request.access_token[:20]}...")
+        
+        # Check secret key
+        secret_key = settings.ZALO_SECRET_KEY or os.getenv("ZALO_SECRET_KEY")
+        logger.info(f"Secret key available: {bool(secret_key)}")
+        
+        if not secret_key:
+            logger.error("ZALO_SECRET_KEY is not configured")
+            return ZaloPhoneResponse(number="ERROR: No secret key")
+        
+        # Test httpx client
+        async with httpx.AsyncClient() as client:
+            logger.info("Testing httpx client with simple request...")
+            try:
+                test_response = await client.get("https://httpbin.org/get", timeout=5.0)
+                logger.info(f"Test request successful: {test_response.status_code}")
+            except Exception as e:
+                logger.error(f"Test request failed: {e}")
+                return ZaloPhoneResponse(number="ERROR: HTTP client failed")
+        
+        logger.info("=== DEBUG ZALO PHONE END ===")
+        return ZaloPhoneResponse(number="DEBUG SUCCESS")
+        
+    except Exception as e:
+        logger.error(f"Debug endpoint error: {str(e)}", exc_info=True)
+        return ZaloPhoneResponse(number=f"DEBUG ERROR: {str(e)}")
+
 @router.post("/phone", response_model=ZaloPhoneResponse)
 async def resolve_zalo_phone(request: ZaloPhoneRequest):
     """
