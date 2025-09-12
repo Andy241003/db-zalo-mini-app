@@ -14,12 +14,18 @@ logger = logging.getLogger(__name__)
 @router.get("/test")
 async def test_zalo():
     """Simple test endpoint to verify Zalo router works"""
+    logger.info(f"ZALO_APP_ID from settings: {settings.ZALO_APP_ID}")
+    logger.info(f"ZALO_SECRET_KEY from settings: {'***HIDDEN***' if settings.ZALO_SECRET_KEY else 'None'}")
+    logger.info(f"ZALO_SECRET_KEY from os.getenv: {'***HIDDEN***' if os.getenv('ZALO_SECRET_KEY') else 'None'}")
+    
     return {
         "message": "Zalo router is working!", 
         "status": "success",
         "config": {
             "app_id": settings.ZALO_APP_ID,
-            "has_secret": bool(settings.ZALO_SECRET_KEY)
+            "has_secret_from_settings": bool(settings.ZALO_SECRET_KEY),
+            "has_secret_from_env": bool(os.getenv('ZALO_SECRET_KEY')),
+            "env_file_location": os.path.abspath('.env') if os.path.exists('.env') else "Not found"
         }
     }
 
@@ -29,17 +35,20 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
     Resolve Zalo Mini App phone number using Zalo Open API
     """
     try:
-        # Get configuration from settings
-        app_id = settings.ZALO_APP_ID
-        secret_key = settings.ZALO_SECRET_KEY
+        # Get configuration from settings, fallback to environment variables
+        app_id = settings.ZALO_APP_ID or os.getenv("ZALO_APP_ID")
+        secret_key = settings.ZALO_SECRET_KEY or os.getenv("ZALO_SECRET_KEY")
         
         if not secret_key:
-            logger.error("ZALO_SECRET_KEY is not configured")
+            logger.error("ZALO_SECRET_KEY is not configured in settings or environment")
             raise HTTPException(status_code=500, detail="Zalo secret key configuration missing")
         
         if not app_id:
-            logger.error("ZALO_APP_ID is not configured") 
+            logger.error("ZALO_APP_ID is not configured in settings or environment") 
             raise HTTPException(status_code=500, detail="Zalo app ID configuration missing")
+        
+        logger.info(f"Using ZALO_APP_ID: {app_id}")
+        logger.info("ZALO_SECRET_KEY loaded successfully")
         
         # Prepare form data for Zalo API
         form_data = {

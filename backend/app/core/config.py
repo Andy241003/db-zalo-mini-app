@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     SERVER_NAME: str = "Zalo Mini App Backend"
     SERVER_HOST: AnyHttpUrl = "http://localhost"
     
+    # Environment Configuration
+    DEBUG: bool = False
+    ENVIRONMENT: str = "development"
+    
     # CORS Configuration
     BACKEND_CORS_ORIGINS: List[str] = [
         "*",
@@ -37,6 +41,7 @@ class Settings(BaseSettings):
     
     # Database Configuration
     USE_LOCAL_DB: bool = True  # Set to False for remote MySQL, True for local MySQL on VPS
+    DATABASE_URL: Optional[str] = None  # Allow override from .env
     
     # Local SQLite database (for development/testing)
     LOCAL_DB_PATH: str = "local_test.db"
@@ -50,8 +55,12 @@ class Settings(BaseSettings):
 
     def model_post_init(self, __context) -> None:
         """Initialize database URI after model creation"""
+        # Use DATABASE_URL from .env if provided, otherwise construct from components
         if not self.DATABASE_URI:
-            if self.USE_LOCAL_DB:
+            if self.DATABASE_URL:
+                self.DATABASE_URI = self.DATABASE_URL
+                print(f"🔧 Using DATABASE_URL from .env")
+            elif self.USE_LOCAL_DB:
                 self.DATABASE_URI = f"mysql+pymysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@localhost/{self.MYSQL_DB}"
                 print(f"🔧 Using local MySQL database: localhost")
             else:
