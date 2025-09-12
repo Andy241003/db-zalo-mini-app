@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     # Zalo Mini App Configuration
-    ZALO_APP_ID: Optional[str] = None
-    ZALO_SECRET_KEY: Optional[str] = None
+    ZALO_APP_ID: Optional[str]
+    ZALO_SECRET_KEY: Optional[str]
     
     SERVER_NAME: str = "Zalo Mini App Backend"
     SERVER_HOST: AnyHttpUrl = "http://localhost"
@@ -92,8 +92,7 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_EXTENSIONS: List[str] = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
 
     class Config:
-        case_sensitive = True
         env_file = ".env"
-
-
+        case_sensitive = True
+        
 settings = Settings()
