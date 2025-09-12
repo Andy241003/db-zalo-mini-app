@@ -62,6 +62,37 @@ async def debug_zalo_phone(request: ZaloPhoneRequest):
         logger.error(f"Debug endpoint error: {str(e)}", exc_info=True)
         return ZaloPhoneResponse(number=f"DEBUG ERROR: {str(e)}")
 
+@router.post("/test-connection")
+async def test_zalo_connection():
+    """Test basic connection to Zalo API without authentication"""
+    try:
+        async with httpx.AsyncClient() as client:
+            # Test basic connectivity to Zalo domain
+            try:
+                response = await client.get("https://openapi.zalo.me", timeout=3.0)
+                return {
+                    "status": "success",
+                    "message": f"Can connect to Zalo API: {response.status_code}",
+                    "url": "https://openapi.zalo.me"
+                }
+            except httpx.TimeoutException:
+                return {
+                    "status": "timeout",
+                    "message": "Timeout connecting to Zalo API",
+                    "url": "https://openapi.zalo.me"
+                }
+            except Exception as e:
+                return {
+                    "status": "error", 
+                    "message": f"Connection error: {str(e)}",
+                    "url": "https://openapi.zalo.me"
+                }
+    except Exception as e:
+        return {
+            "status": "fatal_error",
+            "message": f"Fatal error: {str(e)}"
+        }
+
 @router.post("/phone", response_model=ZaloPhoneResponse)
 async def resolve_zalo_phone(request: ZaloPhoneRequest):
     """
@@ -77,30 +108,34 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
         
         # Prepare form data for Zalo API (must use form-data, not JSON)
         # According to Zalo Mini App docs: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
+        # Parameters: access_token, code (token from miniapp), secret_key
         form_data = {
-            "code": request.token,
             "access_token": request.access_token,
+            "code": request.token,  # This is the token returned by getPhoneNumber() in Mini App
             "secret_key": secret_key
         }
         
         logger.info(f"Calling Zalo API with code: {request.token[:10]}... and access_token: {request.access_token[:10]}...")
         
         # Call Zalo Open API for phone number
-        # Try the correct endpoint for Mini App phone number
+        # According to official docs: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
+        # The endpoint should be: https://openapi.zalo.me/v2.0/me/phone
         async with httpx.AsyncClient() as client:
             try:
+                logger.info(f"Calling Zalo API: https://openapi.zalo.me/v2.0/me/phone")
                 response = await client.post(
                     "https://openapi.zalo.me/v2.0/me/phone",
-                    data=form_data,  # Use data (form-data) not json
-                    timeout=10.0,  # Reduce timeout to 10s
+                    data=form_data,  # Use form-data format as per docs
+                    timeout=8.0,  # Increase timeout slightly
                     headers={
                         "Content-Type": "application/x-www-form-urlencoded"
                     }
                 )
                 logger.info(f"Zalo API response received: status={response.status_code}")
+                
             except httpx.TimeoutException as e:
                 logger.error(f"Zalo API timeout: {e}")
-                raise HTTPException(status_code=408, detail="Zalo API timeout")
+                raise HTTPException(status_code=408, detail="Zalo API timeout - token may be expired (2 minutes)")
             except httpx.RequestError as e:
                 logger.error(f"Zalo API request error: {e}")
                 raise HTTPException(status_code=502, detail="Zalo API connection error")
