@@ -24,6 +24,7 @@ const VouchersList = lazy(() => import(/* webpackChunkName: "vouchers"*/ '@/page
 const ServicesList = lazy(() => import(/* webpackChunkName: "services"*/ '@/pages/service/ServiceManagementSimple'));
 const BookingRequestsList = lazy(() => import(/* webpackChunkName: "booking-requests"*/ '@/pages/business/booking-requests'));
 const RoomStaysList = lazy(() => import(/* webpackChunkName: "room-stays"*/ '@/pages/business/room-stays'));
+const ZaloTestPage = lazy(() => import(/* webpackChunkName: "zalo-test"*/ '@/pages/ZaloTestPage'));
 
 const routeList: RouteObject[] = [
   {
@@ -79,6 +80,10 @@ const routeList: RouteObject[] = [
       {
         path: 'room-stays',
         element: <WrapperRouteComponent element={<RoomStaysList />} titleId="Lưu trú" auth />,
+      },
+      {
+        path: 'zalo-test',
+        element: <WrapperRouteComponent element={<ZaloTestPage />} titleId="Zalo API Test" auth />,
       },
       // {
       //   path: 'facilities',
