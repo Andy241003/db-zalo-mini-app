@@ -5,6 +5,7 @@ import os
 import logging
 
 from app.schemas.zalo import ZaloPhoneRequest, ZaloPhoneResponse
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -13,7 +14,14 @@ logger = logging.getLogger(__name__)
 @router.get("/test")
 async def test_zalo():
     """Simple test endpoint to verify Zalo router works"""
-    return {"message": "Zalo router is working!", "status": "success"}
+    return {
+        "message": "Zalo router is working!", 
+        "status": "success",
+        "config": {
+            "app_id": settings.ZALO_APP_ID,
+            "has_secret": bool(settings.ZALO_SECRET_KEY)
+        }
+    }
 
 @router.post("/phone", response_model=ZaloPhoneResponse)
 async def resolve_zalo_phone(request: ZaloPhoneRequest):
@@ -21,11 +29,17 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
     Resolve Zalo Mini App phone number using Zalo Open API
     """
     try:
-        # Get secret key from environment
-        secret_key = os.getenv("ZALO_SECRET_KEY")
+        # Get configuration from settings
+        app_id = settings.ZALO_APP_ID
+        secret_key = settings.ZALO_SECRET_KEY
+        
         if not secret_key:
-            logger.error("ZALO_SECRET_KEY environment variable is not set")
-            raise HTTPException(status_code=500, detail="Zalo configuration missing")
+            logger.error("ZALO_SECRET_KEY is not configured")
+            raise HTTPException(status_code=500, detail="Zalo secret key configuration missing")
+        
+        if not app_id:
+            logger.error("ZALO_APP_ID is not configured") 
+            raise HTTPException(status_code=500, detail="Zalo app ID configuration missing")
         
         # Prepare form data for Zalo API
         form_data = {

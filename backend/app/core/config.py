@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     # Zalo Mini App Configuration
+    ZALO_APP_ID: Optional[str] = None
     ZALO_SECRET_KEY: Optional[str] = None
     
     SERVER_NAME: str = "Zalo Mini App Backend"
@@ -76,10 +77,6 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr = "admin@example.com"
     FIRST_SUPERUSER_PASSWORD: str = "changethis"
 
-    # Zalo Mini App
-    ZALO_APP_ID: Optional[str] = None
-    ZALO_APP_SECRET: Optional[str] = None
-    
     # File Upload
     UPLOAD_DIR: str = "uploads"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
