@@ -55,22 +55,31 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
         # Call Zalo Open API for phone number
         # Try the correct endpoint for Mini App phone number
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://openapi.zalo.me/v2.0/me/phone",
-                data=form_data,  # Use data (form-data) not json
-                timeout=30.0,
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
-            )
+            try:
+                response = await client.post(
+                    "https://openapi.zalo.me/v2.0/me/phone",
+                    data=form_data,  # Use data (form-data) not json
+                    timeout=10.0,  # Reduce timeout to 10s
+                    headers={
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                )
+                logger.info(f"Zalo API response received: status={response.status_code}")
+            except httpx.TimeoutException as e:
+                logger.error(f"Zalo API timeout: {e}")
+                raise HTTPException(status_code=408, detail="Zalo API timeout")
+            except httpx.RequestError as e:
+                logger.error(f"Zalo API request error: {e}")
+                raise HTTPException(status_code=502, detail="Zalo API connection error")
             
             logger.info(f"Zalo API response status: {response.status_code}")
             
             if response.status_code != 200:
-                logger.error(f"Zalo API returned status {response.status_code}: {response.text}")
+                response_text = response.text
+                logger.error(f"Zalo API returned status {response.status_code}: {response_text}")
                 raise HTTPException(
                     status_code=400, 
-                    detail=f"Zalo API error: HTTP {response.status_code}"
+                    detail=f"Zalo API error: HTTP {response.status_code} - {response_text}"
                 )
             
             # Parse response
@@ -109,21 +118,5 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Unexpected error in resolve_zalo_phone: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-        if "error" in response_data and response_data["error"] != 0:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Zalo API error {response_data['error']}: {response_data.get('message','Unknown')}"
-            )
-
-        phone_number = response_data.get("data", {}).get("number")
-        if not phone_number:
-            raise HTTPException(status_code=400, detail="Phone number not found in response")
-
-        return ZaloPhoneResponse(number=phone_number)
-
-    except HTTPException:
-        raise
-    except Exception as e:
+        logger.error(f"Unexpected error in resolve_zalo_phone: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
