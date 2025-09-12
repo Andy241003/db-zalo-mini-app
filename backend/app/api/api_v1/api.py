@@ -19,7 +19,9 @@ from app.api.api_v1.endpoints import (
     # experiences,  # Commented out - missing TblExperiences model
     hotel_brands,
     auth,
-    dashboard
+    dashboard,
+    zalo,  # Added zalo endpoint
+    zalo_test  # Added simple test endpoint
     # Media endpoints removed - no tables in database
 )
 
@@ -43,5 +45,9 @@ api_router.include_router(dashboard.router, tags=["dashboard"])
 
 # Authentication endpoints
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
+
+# Zalo Mini App endpoints
+api_router.include_router(zalo.router, prefix="/zalo", tags=["zalo"])
+api_router.include_router(zalo_test.router, prefix="/zalo-test", tags=["zalo-test"])
 
 # Media endpoints removed - no corresponding database tables

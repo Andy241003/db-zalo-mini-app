@@ -8,6 +8,7 @@ from .customer_vouchers import *
 from .facilities import *
 from .facility_features import *
 from .games import *
+from .zalo import *  # Added zalo schemas
 from .hotel_brands import *
 from .promotions import *
 from .rooms import *

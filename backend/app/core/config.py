@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
+    # Zalo Mini App Configuration
+    ZALO_SECRET_KEY: Optional[str] = None
+    
     SERVER_NAME: str = "Zalo Mini App Backend"
     SERVER_HOST: AnyHttpUrl = "http://localhost"
     

@@ -17,6 +17,7 @@ from . import (
     service_bookings,
     tenants,
     vouchers,
+    zalo,  # Added Zalo Mini App integration
 )
 
 __all__ = [
@@ -37,4 +38,5 @@ __all__ = [
     "tenants",
     "user",
     "vouchers",
+    "zalo",  # Added Zalo Mini App integration
 ]
