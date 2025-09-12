@@ -106,30 +106,22 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
             logger.error("ZALO_SECRET_KEY is not configured")
             raise HTTPException(status_code=500, detail="Zalo configuration missing")
         
-        # Prepare form data for Zalo API (must use form-data, not JSON)
-        # According to Zalo Mini App docs: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
-        # Parameters: access_token, code (token from miniapp), secret_key
-        form_data = {
-            "access_token": request.access_token,
-            "code": request.token,  # This is the token returned by getPhoneNumber() in Mini App
-            "secret_key": secret_key
-        }
-        
         logger.info(f"Calling Zalo API with code: {request.token[:10]}... and access_token: {request.access_token[:10]}...")
         
         # Call Zalo Open API for phone number
-        # According to official docs: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
-        # The endpoint should be: https://openapi.zalo.me/v2.0/me/phone
+        # According to the actual implementation, Zalo uses headers, not form-data
+        # Endpoint: https://graph.zalo.me/v2.0/me/info (not /phone)
         async with httpx.AsyncClient() as client:
             try:
-                logger.info(f"Calling Zalo API: https://openapi.zalo.me/v2.0/me/phone")
-                response = await client.post(
-                    "https://openapi.zalo.me/v2.0/me/phone",
-                    data=form_data,  # Use form-data format as per docs
-                    timeout=8.0,  # Increase timeout slightly
+                logger.info(f"Calling Zalo API: https://graph.zalo.me/v2.0/me/info")
+                response = await client.get(
+                    "https://graph.zalo.me/v2.0/me/info",
                     headers={
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    }
+                        "access_token": request.access_token,
+                        "code": request.token,  # This is the token returned by getPhoneNumber() in Mini App
+                        "secret_key": secret_key
+                    },
+                    timeout=8.0
                 )
                 logger.info(f"Zalo API response received: status={response.status_code}")
                 
