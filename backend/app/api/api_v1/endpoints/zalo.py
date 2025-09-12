@@ -37,7 +37,7 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
         # Call Zalo Open API
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://graph.zalo.me/v2.0/miniapp/phone/getphone",
+                "https://graph.zalo.me/v2.0/me/info",
                 data=form_data,
                 timeout=30.0
             )
