@@ -43,6 +43,7 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
             raise HTTPException(status_code=500, detail="Zalo configuration missing")
         
         # Prepare form data for Zalo API (must use form-data, not JSON)
+        # According to Zalo Mini App docs: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
         form_data = {
             "code": request.token,
             "access_token": request.access_token,
@@ -52,11 +53,15 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
         logger.info(f"Calling Zalo API with code: {request.token[:10]}... and access_token: {request.access_token[:10]}...")
         
         # Call Zalo Open API for phone number
+        # Try the correct endpoint for Mini App phone number
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://graph.zalo.me/v2.0/miniapp/phone/getphone",
+                "https://openapi.zalo.me/v2.0/me/phone",
                 data=form_data,  # Use data (form-data) not json
-                timeout=30.0
+                timeout=30.0,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
             )
             
             logger.info(f"Zalo API response status: {response.status_code}")
@@ -86,12 +91,16 @@ async def resolve_zalo_phone(request: ZaloPhoneRequest):
                     detail=f"Zalo API error {error_code}: {error_message}"
                 )
             
-            # Extract phone number
+            # Extract phone number - check both possible response formats
             phone_data = response_data.get("data", {})
-            phone_number = phone_data.get("number")
+            phone_number = phone_data.get("number") or phone_data.get("phone")
+            
+            # Also check direct fields in case of different response structure
+            if not phone_number:
+                phone_number = response_data.get("number") or response_data.get("phone")
             
             if not phone_number:
-                logger.error("Phone number not found in Zalo API response")
+                logger.error(f"Phone number not found in Zalo API response: {response_data}")
                 raise HTTPException(status_code=400, detail="Phone number not found in response")
             
             logger.info(f"Successfully resolved phone number: {phone_number}")
