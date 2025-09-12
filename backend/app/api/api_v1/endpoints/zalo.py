@@ -31,23 +31,77 @@ async def test_zalo():
 
 @router.post("/phone", response_model=ZaloPhoneResponse)
 async def resolve_zalo_phone(request: ZaloPhoneRequest):
+    """
+    Resolve Zalo Mini App phone number using Zalo Open API
+    Reference: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
+    """
     try:
-        secret_key = os.getenv("ZALO_SECRET_KEY")
+        # Get credentials from settings (with fallback to env)
+        secret_key = settings.ZALO_SECRET_KEY or os.getenv("ZALO_SECRET_KEY")
         if not secret_key:
+            logger.error("ZALO_SECRET_KEY is not configured")
             raise HTTPException(status_code=500, detail="Zalo configuration missing")
-
+        
+        # Prepare form data for Zalo API (must use form-data, not JSON)
+        form_data = {
+            "code": request.token,
+            "access_token": request.access_token,
+            "secret_key": secret_key
+        }
+        
+        logger.info(f"Calling Zalo API with code: {request.token[:10]}... and access_token: {request.access_token[:10]}...")
+        
+        # Call Zalo Open API for phone number
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://graph.zalo.me/v2.0/me/info",
-                json={
-                    "code": request.token,
-                    "access_token": request.access_token,
-                    "secret_key": secret_key
-                },
+                "https://graph.zalo.me/v2.0/miniapp/phone/getphone",
+                data=form_data,  # Use data (form-data) not json
                 timeout=30.0
             )
-
-        response_data = response.json()
+            
+            logger.info(f"Zalo API response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                logger.error(f"Zalo API returned status {response.status_code}: {response.text}")
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Zalo API error: HTTP {response.status_code}"
+                )
+            
+            # Parse response
+            try:
+                response_data = response.json()
+                logger.info(f"Zalo API response: {response_data}")
+            except Exception as e:
+                logger.error(f"Failed to parse Zalo API response: {e}")
+                raise HTTPException(status_code=400, detail="Invalid response from Zalo API")
+            
+            # Check for error in response
+            error_code = response_data.get("error", 0)
+            if error_code != 0:
+                error_message = response_data.get("message", "Unknown error from Zalo API")
+                logger.error(f"Zalo API returned error {error_code}: {error_message}")
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Zalo API error {error_code}: {error_message}"
+                )
+            
+            # Extract phone number
+            phone_data = response_data.get("data", {})
+            phone_number = phone_data.get("number")
+            
+            if not phone_number:
+                logger.error("Phone number not found in Zalo API response")
+                raise HTTPException(status_code=400, detail="Phone number not found in response")
+            
+            logger.info(f"Successfully resolved phone number: {phone_number}")
+            return ZaloPhoneResponse(number=phone_number)
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in resolve_zalo_phone: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
         if "error" in response_data and response_data["error"] != 0:
             raise HTTPException(
                 status_code=400,
