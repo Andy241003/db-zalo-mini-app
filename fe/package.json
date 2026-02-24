@@ -2,6 +2,9 @@
   "name": "react-antd-admin",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@ant-design/plots": "^2.6.3",
     "@emotion/core": "^11.0.0",
