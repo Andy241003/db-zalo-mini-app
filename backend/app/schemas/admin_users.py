@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 
 # Base schema for AdminUser
@@ -29,10 +29,7 @@ class AdminUserResponse(AdminUserBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        # Support both pydantic v1 and v2: use `orm_mode` (v1) and `from_attributes` (v2)
-        orm_mode = True
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Schema for AdminUser in database
 class AdminUserInDB(AdminUserResponse):
