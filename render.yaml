@@ -11,5 +11,3 @@ services:
         value: "False"
       - key: SECRET_KEY
         value: your_secret_key_here_change_me_in_production
-      - key: DATABASE_URL
-        value: ""
