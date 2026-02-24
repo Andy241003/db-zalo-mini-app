@@ -20,4 +20,3 @@ databases:
   - name: zalo-mini-app-db
     databaseName: zalominiapp
     user: zalominiapp_user
-    region: singapore
