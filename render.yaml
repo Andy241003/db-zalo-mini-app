@@ -5,7 +5,7 @@ services:
     pythonVersion: 3.11
     rootDir: backend
     buildCommand: pip install -r app/requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: USE_LOCAL_DB
         value: "False"
