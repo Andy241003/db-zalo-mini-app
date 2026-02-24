@@ -2,12 +2,16 @@ import json
 import secrets
 from typing import Any, Dict, List, Optional, Union
 from pydantic import AnyHttpUrl, EmailStr, HttpUrl, validator
-from pydantic_settings import BaseSettings
+try:
+    from pydantic_settings import BaseSettings  # pydantic v2
+except Exception:
+    from pydantic import BaseSettings  # pydantic v1
 
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    # SECRET_KEY should be set in .env for production, use fixed key for development
+    SECRET_KEY: str = "your-secret-key-change-in-production-9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
@@ -96,3 +100,17 @@ class Settings(BaseSettings):
         case_sensitive = True
         
 settings = Settings()
+
+# Backwards-compatibility: ensure DATABASE_URI is populated when pydantic v1
+# is used and `model_post_init` (pydantic v2 hook) did not run.
+if not getattr(settings, "DATABASE_URI", None):
+    if getattr(settings, "DATABASE_URL", None):
+        settings.DATABASE_URI = settings.DATABASE_URL
+        print("🔧 Using DATABASE_URL from .env (post-init fallback)")
+    elif getattr(settings, "USE_LOCAL_DB", False):
+        local_path = getattr(settings, "LOCAL_DB_PATH", "local_test.db")
+        settings.DATABASE_URI = f"sqlite:///{local_path}"
+        print(f"🔧 Using fallback local SQLite DB: {settings.DATABASE_URI}")
+    else:
+        settings.DATABASE_URI = f"mysql+pymysql://{settings.MYSQL_USER}:{settings.MYSQL_PASSWORD}@{settings.MYSQL_SERVER}/{settings.MYSQL_DB}"
+        print(f"🔧 Using fallback MySQL DB: {settings.MYSQL_SERVER}")

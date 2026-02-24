@@ -30,6 +30,8 @@ class AdminUserResponse(AdminUserBase):
     updated_at: Optional[datetime] = None
 
     class Config:
+        # Support both pydantic v1 and v2: use `orm_mode` (v1) and `from_attributes` (v2)
+        orm_mode = True
         from_attributes = True
 
 # Schema for AdminUser in database

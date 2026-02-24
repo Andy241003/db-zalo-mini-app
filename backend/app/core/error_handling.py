@@ -3,6 +3,7 @@ import time
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 import json
+import traceback
 
 class ErrorHandler:
     """
@@ -35,6 +36,7 @@ class ErrorHandler:
             "timestamp": time.time(),
             "error_type": error_type,
             "error_message": error_message,
+            "traceback": "".join(traceback.format_exception(type(error), error, error.__traceback__)),
             "context": context or {},
             "severity": self._determine_severity(error)
         }

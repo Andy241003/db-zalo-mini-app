@@ -22,7 +22,7 @@ class TenantRead(TenantBase):
     deleted_by: Optional[str] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class TenantUpdate(BaseModel):
     name: Optional[str] = None
