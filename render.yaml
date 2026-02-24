@@ -5,7 +5,7 @@ services:
     pythonVersion: 3.11
     rootDir: backend
     buildCommand: pip install -r app/requirements.txt
-    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: USE_LOCAL_DB
         value: "False"
@@ -21,10 +21,10 @@ services:
         user: zalominiapp_user
         region: singapore
 
-  - type: static_site
+  - type: static
     name: zalo-mini-app-frontend
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
+    buildCommand: cd fe && npm ci && npm run build
+    publishPath: fe/dist
     envVars:
       - key: VITE_API_BASE_URL
         value: ${{ services.zalo-mini-app-backend.url }}
