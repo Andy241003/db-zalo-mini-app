@@ -6,8 +6,3 @@ services:
     rootDir: backend
     buildCommand: pip install -r app/requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: USE_LOCAL_DB
-        value: "False"
-      - key: SECRET_KEY
-        value: your_secret_key_here_change_me_in_production
