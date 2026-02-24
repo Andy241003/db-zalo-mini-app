@@ -1,0 +1,5 @@
+---
+# Root requirements file for Render deploys.
+# Render runs `pip install -r requirements.txt` in the repo root.
+# Include the backend app requirements here so the root build command works.
+-r backend/app/requirements.txt
