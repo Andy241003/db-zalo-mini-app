@@ -15,8 +15,9 @@ services:
         fromDatabase:
           name: zalo-mini-app-db
           property: connectionString
-    databases:
-      - name: zalo-mini-app-db
-        databaseName: zalominiapp
-        user: zalominiapp_user
-        region: singapore
+
+databases:
+  - name: zalo-mini-app-db
+    databaseName: zalominiapp
+    user: zalominiapp_user
+    region: singapore
