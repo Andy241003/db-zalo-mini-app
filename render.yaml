@@ -20,11 +20,3 @@ services:
         databaseName: zalominiapp
         user: zalominiapp_user
         region: singapore
-
-  - type: static
-    name: zalo-mini-app-frontend
-    buildCommand: cd fe && npm ci && npm run build
-    publishPath: fe/dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: ${{ services.zalo-mini-app-backend.url }}
