@@ -2,6 +2,29 @@ services:
   - type: web
     name: zalo-mini-app-backend
     runtime: python
+    pythonVersion: 3.11
     rootDir: backend
     buildCommand: pip install -r app/requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: USE_LOCAL_DB
+        value: "False"
+      - key: SECRET_KEY
+        value: your_secret_key_here_change_me_in_production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zalo-mini-app-db
+          property: connectionString
+    databases:
+      - name: zalo-mini-app-db
+        databaseName: zalominiapp
+        user: zalominiapp_user
+        region: singapore
+
+  - type: static_site
+    name: zalo-mini-app-frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: ${{ services.zalo-mini-app-backend.url }}
