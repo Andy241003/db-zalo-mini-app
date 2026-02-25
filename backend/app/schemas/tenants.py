@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import Optional
 import datetime
 
@@ -21,7 +21,8 @@ class TenantRead(TenantBase):
     deleted_at: Optional[datetime.datetime] = None
     deleted_by: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
 class TenantUpdate(BaseModel):
     name: Optional[str] = None
