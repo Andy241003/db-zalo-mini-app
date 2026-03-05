@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: zalo_db
+      MYSQL_USER: zalo
+      MYSQL_PASSWORD: zalopass
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    depends_on:
+      - db
+    environment:
+      # Example DB URL; replace via .env or override in production
+      DATABASE_URL: mysql+pymysql://zalo:zalopass@db:3306/zalo_db
+      USE_LOCAL_DB: 'True'
+      # add other env vars here or use an env_file
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  db_data:
