@@ -44,17 +44,17 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Zalo Mini App"
     
     # Database Configuration
-    USE_LOCAL_DB: bool = True  # Set to False for remote MySQL, True for local MySQL on VPS
+    USE_LOCAL_DB: bool = False  # Set to False for remote MySQL, True for local MySQL on VPS
     DATABASE_URL: Optional[str] = None  # Allow override from .env
     
     # Local SQLite database (for development/testing)
     LOCAL_DB_PATH: str = "local_test.db"
     
-    # Remote MySQL database - UPDATED FOR LOCAL TESTING
-    MYSQL_SERVER: str = "localhost"
-    MYSQL_USER: str = "root"
-    MYSQL_PASSWORD: str = "123456"
-    MYSQL_DB: str = "bookingservicesiovn_zalominidb"
+    # Remote MySQL database - VPS production
+    MYSQL_SERVER: str = "157.10.199.22"
+    MYSQL_USER: str = "vp_admin"
+    MYSQL_PASSWORD: str = "bI9SmNMOEbXC5@b/"
+    MYSQL_DB: str = "zalo-mini-app"
     DATABASE_URI: Optional[str] = None
 
     def model_post_init(self, __context) -> None:
