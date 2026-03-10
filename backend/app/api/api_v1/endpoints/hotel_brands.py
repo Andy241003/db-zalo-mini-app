@@ -19,13 +19,21 @@ def get_current_hotel_brand(
     """
     try:
         # Xác định tenant_id
-        if current_user.role == "SUPER_ADMIN":
-            # Super admin có thể xem tất cả, nhưng cần tenant_id cụ thể
-            tenant_id = current_user.tenant_id  # Hoặc lấy từ query param
+        if current_user.role.upper() == "SUPER_ADMIN":
+            # Super admin không thuộc tenant cụ thể
+            tenant_id = current_user.tenant_id
         else:
             if not current_user.tenant_id:
                 raise HTTPException(status_code=400, detail="Hotel admin phải thuộc về một tenant")
             tenant_id = current_user.tenant_id
+
+        # Super admin không có tenant_id → trả về rỗng
+        if tenant_id is None:
+            return {
+                "success": True,
+                "data": None,
+                "message": "Super admin không thuộc tenant nào"
+            }
 
         # Tìm hotel brand của tenant
         hotel_brand = db.query(TblHotelBrands).filter(
@@ -73,7 +81,7 @@ def create_hotel_brand(
     """
     try:
         # Xác định tenant_id
-        if current_user.role == "SUPER_ADMIN":
+        if current_user.role.upper() == "SUPER_ADMIN":
             tenant_id = brand_data.get('tenant_id', current_user.tenant_id)
         else:
             if not current_user.tenant_id:
@@ -142,7 +150,7 @@ def update_hotel_brand(
             raise HTTPException(status_code=404, detail="Không tìm thấy thông tin thương hiệu")
 
         # Kiểm tra quyền
-        if current_user.role != "SUPER_ADMIN" and brand.tenant_id != current_user.tenant_id:
+        if current_user.role.upper() != "SUPER_ADMIN" and brand.tenant_id != current_user.tenant_id:
             raise HTTPException(status_code=403, detail="Không có quyền cập nhật thương hiệu này")
 
         # Cập nhật thông tin

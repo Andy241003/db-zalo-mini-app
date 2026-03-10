@@ -89,7 +89,7 @@ const HotelBrandView: React.FC = () => {
     setLoading(true);
     try {
       const token = authStore.getState().token;
-      const response: any = await request('get', '/current', {}, {
+      const response: any = await request('get', '/hotel-brands/current', {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

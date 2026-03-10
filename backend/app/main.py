@@ -197,7 +197,7 @@ app.include_router(facilities.router, prefix="/api/v1", tags=["Facilities"])
 app.include_router(facility_features.router, prefix="/api/v1", tags=["Facility Features"])
 # app.include_router(experiences.router, prefix="/api/v1", tags=["Experiences"])  # Removed - no table in DB
 app.include_router(games.router, prefix="/api/v1", tags=["Games"])
-app.include_router(hotel_brands.router, prefix="/api/v1", tags=["Hotel Brands"])
+app.include_router(hotel_brands.router, prefix="/api/v1/hotel-brands", tags=["Hotel Brands"])
 app.include_router(promotions.router, prefix="/api/v1", tags=["Promotions"])
 app.include_router(room_stays.router, prefix="/api/v1", tags=["Room Stays"])
 app.include_router(service_bookings.router, prefix="/api/v1", tags=["Service Bookings"])

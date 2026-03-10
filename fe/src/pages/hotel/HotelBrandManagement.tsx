@@ -231,7 +231,7 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
     if (!isMountedRef.current) return;
     setLoading(true);
     try {
-      const response: any = await request('get', '/current');
+      const response: any = await request('get', '/hotel-brands/current');
       if (response && response.success && response.data && isMountedRef.current) {
         const brandData = response.data as HotelBrand;
         
