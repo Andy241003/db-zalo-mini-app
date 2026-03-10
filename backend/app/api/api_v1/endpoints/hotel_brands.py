@@ -65,7 +65,9 @@ def get_current_hotel_brand(
             "data": hotel_brand,
             "message": "Lấy thông tin thương hiệu thành công"
         }
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error getting hotel brand: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Lỗi hệ thống: {str(e)}")
