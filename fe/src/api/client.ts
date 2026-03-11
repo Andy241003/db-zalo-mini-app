@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://zalominiapp.vtlink.vn';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

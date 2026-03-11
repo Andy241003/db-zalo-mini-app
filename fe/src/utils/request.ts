@@ -4,7 +4,7 @@ import { tenantStore } from '../stores/tenantStore';
 
 // Create typed axios instance
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || '',
+  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com',
   timeout: 15000,
 });
 

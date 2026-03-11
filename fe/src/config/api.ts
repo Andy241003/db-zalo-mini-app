@@ -1,7 +1,7 @@
 // API Configuration for different environments
 export const API_CONFIG = {
-  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || 'https://zalominiapp.vtlink.vn',
-  uploadURL: (import.meta.env.VITE_API_BASE_URL as string)?.replace('/api', '') || 'https://zalominiapp.vtlink.vn',
+  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com',
+  uploadURL: (import.meta.env.VITE_API_BASE_URL as string)?.replace('/api', '') || 'https://db-zalo-mini-app-be.onrender.com',
 }
 
 // Helper functions

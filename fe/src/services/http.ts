@@ -4,7 +4,7 @@ import { auth } from '@/store/auth';
 
 // Create axios instance
 const http = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL as string}/api/v1`,
+  baseURL: `${(import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com'}/api/v1`,
   timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
