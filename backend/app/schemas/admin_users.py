@@ -12,7 +12,7 @@ class AdminUserBase(BaseModel):
 
 # Schema for creating AdminUser
 class AdminUserCreate(AdminUserBase):
-    password: str
+        password: str
 
 # Schema for updating AdminUser
 class AdminUserUpdate(BaseModel):
