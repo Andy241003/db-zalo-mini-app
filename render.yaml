@@ -16,6 +16,10 @@ services:
     rootDir: fe
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false   # Set manually in Render dashboard to backend URL after deploy
+        value: https://db-zalo-mini-app-be.onrender.com
