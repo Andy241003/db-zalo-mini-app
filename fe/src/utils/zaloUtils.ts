@@ -1,6 +1,13 @@
 // Zalo Phone Resolution Service
 // Flow: zmp.getPhoneNumber() -> phone_token -> POST /zalo/phone -> Zalo Server -> số điện thoại
 
+declare const window: Window & {
+  zmp?: {
+    getPhoneNumber: () => Promise<{ token: string }>;
+    getAccessToken: () => Promise<{ accessToken: string }>;
+  };
+};
+
 const API_BASE_URL =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
   'https://db-zalo-mini-app-be.onrender.com';
@@ -19,7 +26,7 @@ export class ZaloPhoneService {
    * @param {number} tenantId - ID của hotel/tenant đang dùng Mini App
    * @returns {Promise<string>} Số điện thoại
    */
-  async getPhoneFromZaloSDK(tenantId) {
+  async getPhoneFromZaloSDK(tenantId: number): Promise<string> {
     if (!this.isZaloEnvironment()) {
       throw new Error('Không chạy trong môi trường Zalo Mini App. Vui lòng mở ứng dụng trong Zalo.');
     }
@@ -42,7 +49,7 @@ export class ZaloPhoneService {
 
       // Bước 2: Gửi token lên backend để lấy số điện thoại thật
       return await this.resolvePhone(phoneToken, accessToken, tenantId);
-    } catch (error) {
+    } catch (error: any) {
       // Zalo SDK trả lỗi nếu người dùng từ chối quyền
       if (error?.code === -201) {
         throw new Error('Người dùng từ chối cấp quyền truy cập số điện thoại');
@@ -58,7 +65,7 @@ export class ZaloPhoneService {
    * @param {number} tenantId - ID của hotel/tenant
    * @returns {Promise<string>} Số điện thoại
    */
-  async resolvePhone(token, accessToken, tenantId) {
+  async resolvePhone(token: string, accessToken: string, tenantId: number): Promise<string> {
     const response = await fetch(`${API_BASE_URL}/api/v1/zalo/phone`, {
       method: 'POST',
       headers: {
