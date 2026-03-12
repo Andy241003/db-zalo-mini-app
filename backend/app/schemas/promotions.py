@@ -10,6 +10,12 @@ class PromotionBase(BaseModel):
     end_date: Optional[date] = None
     banner_image: Optional[str] = None
     status: Optional[str] = 'active'
+    type: Optional[str] = 'campaign'  # campaign | voucher
+    code: Optional[str] = None
+    discount_type: Optional[str] = None  # percentage | fixed
+    discount_value: Optional[float] = None
+    max_usage: Optional[int] = None
+    used_count: Optional[int] = 0
 
 # Schema for creating promotion (request from user)
 class PromotionCreateRequest(PromotionBase):

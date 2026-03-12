@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from decimal import Decimal
 
 # Base service schema
@@ -8,7 +8,7 @@ class ServiceBase(BaseModel):
     service_name: Optional[str] = None
     description: Optional[str] = None
     type: Optional[str] = None
-    image_url: Optional[str] = None
+    image_url: Optional[List[str]] = None  # array of image URLs for slideshow
     price: Optional[Decimal] = None
     unit: Optional[str] = None
     duration_minutes: Optional[int] = None

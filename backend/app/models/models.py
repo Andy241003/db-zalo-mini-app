@@ -212,7 +212,7 @@ class TblServices(Base):
     service_name = Column(String(255), nullable=False)
     description = Column(Text)
     type = Column(String(50))
-    image_url = Column(String(255))
+    image_url = Column(JSON)  # array of image URLs for slideshow
     price = Column(DECIMAL(10, 2))
     unit = Column(String(50))
     duration_minutes = Column(Integer)
@@ -297,6 +297,12 @@ class TblPromotions(Base):
     end_date = Column(Date)
     banner_image = Column(String(512))
     status = Column(String(20), default='active')
+    type = Column(String(50), default='campaign')  # campaign | voucher
+    code = Column(String(100))
+    discount_type = Column(String(20))  # percentage | fixed
+    discount_value = Column(DECIMAL(10, 2))
+    max_usage = Column(Integer)
+    used_count = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.current_timestamp())
     updated_at = Column(DateTime, nullable=False, default=func.current_timestamp(), onupdate=func.current_timestamp())
     created_by = Column(String(50))
