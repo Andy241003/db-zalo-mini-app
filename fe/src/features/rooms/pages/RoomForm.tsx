@@ -10,11 +10,10 @@ import {
   Space,
   Row,
   Col,
-  Upload,
   message,
 } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
 import { useCreateRoom, useUpdateRoom } from '../hooks';
+import { ImageField } from '@/components/ImagePickerModal';
 import type { Room } from '@/types';
 import type { CreateRoomRequest } from '../api';
 
@@ -229,9 +228,9 @@ const RoomForm: React.FC<RoomFormProps> = ({ open, room, onClose }) => {
 
         <Form.Item
           name="image_url"
-          label="URL hình ảnh"
+          label="Hình ảnh phòng"
         >
-          <Input placeholder="https://example.com/room-image.jpg" />
+          <ImageField folder="rooms" />
         </Form.Item>
 
         <Form.Item

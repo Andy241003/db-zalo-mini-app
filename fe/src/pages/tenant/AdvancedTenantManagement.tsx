@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import {
   Card, Table, Button, Space, Tag, Modal, Form, Input, Select, 
   Avatar, Typography, Row, Col, Statistic, Badge, Drawer,
-  message, Popconfirm, Switch, DatePicker, Upload, Tooltip
+  message, Popconfirm, Switch, DatePicker, Tooltip
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined,
   UserOutlined, DollarOutlined, CalendarOutlined, SettingOutlined,
-  UploadOutlined, ExportOutlined, FilterOutlined, ReloadOutlined
+  ExportOutlined, FilterOutlined, ReloadOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { tenantApi } from '../../api/backend.api';
+import { ImageField } from '../../components/ImagePickerModal';
 import type { Tenant, CreateTenantRequest } from '../../types/api';
 
 const { Title, Text } = Typography;
@@ -487,9 +488,9 @@ const AdvancedTenantManagement: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="logo_url"
-                label="Logo URL"
+                label="Logo"
               >
-                <Input placeholder="https://example.com/logo.png" />
+                <ImageField folder="tenants" />
               </Form.Item>
             </Col>
           </Row>

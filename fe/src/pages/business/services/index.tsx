@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, Select, InputNumber, Switch, message
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getServices, createService, updateService, deleteService, Service, ServiceCreate, ServiceUpdate } from '../../../api/service.api';
 import { authStore } from '../../../stores/authStore';
+import { ImageField } from '../../../components/ImagePickerModal';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -673,9 +674,9 @@ const ServicesPage: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="image_url"
-                label="Image URL"
+                label="Hình ảnh dịch vụ"
               >
-                <Input placeholder="Enter image URL (optional)" />
+                <ImageField folder="services" />
               </Form.Item>
             </Col>
             <Col span={12}>

@@ -11,6 +11,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { get, post, put } from '../../utils/request';
+import { ImageField } from '../../components/ImagePickerModal';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -468,7 +469,7 @@ const UiComponentsPage: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="logo_url" label="Logo URL">
-                <Input />
+                <ImageField folder="ui-themes" />
               </Form.Item>
             </Col>
             <Col span={12}>

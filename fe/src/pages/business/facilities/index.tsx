@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm }
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getFacilities, createFacility, updateFacility, deleteFacility, Facility, FacilityCreate, FacilityUpdate } from '../../../api/facility.api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
+import { ImageField } from '../../../components/ImagePickerModal';
 
 const { Option } = Select;
 
@@ -193,9 +194,9 @@ const FacilitiesPage: React.FC = () => {
           </Form.Item>
           <Form.Item
             name="image_url"
-            label="Image URL"
+            label="Hình ảnh tiện ích"
           >
-            <Input />
+            <ImageField folder="facilities" />
           </Form.Item>
           <Form.Item
             name="video_url"

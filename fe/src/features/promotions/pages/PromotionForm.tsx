@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 import { useCreatePromotion, useUpdatePromotion } from '../hooks';
 import type { Promotion } from '@/types';
 import type { CreatePromotionRequest } from '../api';
+import { ImageField } from '@/components/ImagePickerModal';
 
 interface PromotionFormProps {
   open: boolean;
@@ -223,9 +224,9 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ open, promotion, onClose 
 
         <Form.Item
           name="banner_image"
-          label="URL hình banner"
+          label="Hình banner"
         >
-          <Input placeholder="https://example.com/banner-image.jpg" />
+          <ImageField folder="promotions" />
         </Form.Item>
 
         <Form.Item
