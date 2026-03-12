@@ -10,6 +10,10 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false   # Set manually in Render dashboard: mysql+pymysql://vp_admin:...@157.10.199.22:3306/zalo-mini-app
+      - key: ZALO_APP_ID
+        sync: false   # Set manually in Render dashboard: 2618822866924995266
+      - key: ZALO_SECRET_KEY
+        sync: false   # Set manually in Render dashboard: cMl8B77MQ97Fd31fXBMJ
 
   - type: static_site
     name: zalo-mini-app-frontend

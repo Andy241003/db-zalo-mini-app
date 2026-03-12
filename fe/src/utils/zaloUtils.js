@@ -1,53 +1,81 @@
-// Simple Zalo Phone Resolution Service
+// Zalo Phone Resolution Service
+// Flow: zmp.getPhoneNumber() -> phone_token -> POST /zalo/phone -> Zalo Server -> số điện thoại
+
+const API_BASE_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
+  'https://db-zalo-mini-app-be.onrender.com';
 
 export class ZaloPhoneService {
   /**
-   * Gọi backend để resolve số điện thoại từ Zalo
-   * @param {string} token - Token/code từ Zalo Mini App
-   * @param {string} accessToken - Access token từ Zalo Mini App
+   * Kiểm tra có đang chạy trong Zalo Mini App không
+   */
+  isZaloEnvironment() {
+    return typeof window !== 'undefined' && typeof window.zmp !== 'undefined';
+  }
+
+  /**
+   * [MAIN] Tự động lấy số điện thoại từ Zalo SDK rồi gọi backend
+   * Gọi hàm này từ UI button "Lấy số điện thoại"
    * @returns {Promise<string>} Số điện thoại
    */
-  async resolvePhone(token, accessToken) {
+  async getPhoneFromZaloSDK() {
+    if (!this.isZaloEnvironment()) {
+      throw new Error('Không chạy trong môi trường Zalo Mini App. Vui lòng mở ứng dụng trong Zalo.');
+    }
+
     try {
-      console.log('Calling backend to resolve phone number...');
-      
-      const response = await fetch('/api/v1/zalo/phone', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Thêm auth header nếu cần
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
-        },
-        body: JSON.stringify({
-          token: token,
-          access_token: accessToken
-        })
-      });
+      // Bước 1: Lấy phone_token và access_token song song
+      console.log('[Zalo] Calling zmp.getPhoneNumber() and zmp.getAccessToken()...');
+      const [phoneResult, accessTokenResult] = await Promise.all([
+        window.zmp.getPhoneNumber(),
+        window.zmp.getAccessToken(),
+      ]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
-      }
+      const phoneToken = phoneResult?.token;
+      const accessToken = accessTokenResult?.accessToken;
 
-      const result = await response.json();
-      console.log('Backend response:', result);
-      
-      return result.number;
+      if (!phoneToken) throw new Error('Không lấy được phone_token từ Zalo');
+      if (!accessToken) throw new Error('Không lấy được access_token từ Zalo');
+
+      console.log('[Zalo] Got tokens, calling backend...');
+
+      // Bước 2: Gửi token lên backend để lấy số điện thoại thật
+      return await this.resolvePhone(phoneToken, accessToken);
     } catch (error) {
-      console.error('Error calling backend:', error);
+      // Zalo SDK trả lỗi nếu người dùng từ chối quyền
+      if (error?.code === -201) {
+        throw new Error('Người dùng từ chối cấp quyền truy cập số điện thoại');
+      }
       throw error;
     }
   }
 
   /**
-   * Demo function - sử dụng mock data để test
-   * @returns {Promise<string>} Mock phone number
+   * Gọi backend để resolve số điện thoại từ token
+   * @param {string} token - phone_token từ zmp.getPhoneNumber()
+   * @param {string} accessToken - access_token từ zmp.getAccessToken()
+   * @returns {Promise<string>} Số điện thoại
    */
-  async resolvePhoneDemo() {
-    const mockToken = 'demo_token_' + Date.now();
-    const mockAccessToken = 'demo_access_token_' + Date.now();
-    
-    return this.resolvePhone(mockToken, mockAccessToken);
+  async resolvePhone(token, accessToken) {
+    const response = await fetch(`${API_BASE_URL}/api/v1/zalo/phone`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: token,
+        access_token: accessToken,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('[Zalo] Backend response:', result);
+    return result.number;
   }
 }
 
