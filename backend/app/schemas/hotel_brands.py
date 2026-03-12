@@ -22,6 +22,7 @@ class HotelBrandBase(BaseModel):
     website_url: Optional[str] = None
     zalo_oa_id: Optional[str] = None
     zalo_app_id: Optional[str] = None
+    zalo_secret_key: Optional[str] = None
     facebook_url: Optional[str] = None
     youtube_url: Optional[str] = None
     tiktok_url: Optional[str] = None

@@ -76,6 +76,7 @@ interface HotelBrand {
   tiktok_url?: string;
   zalo_oa_id?: string;
   zalo_app_id?: string;
+  zalo_secret_key?: string;
   copyright_text?: string;
   banner_images?: string; // This stores JSON string or text with URLs
   latitude?: number;
@@ -838,6 +839,14 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
 
               <Form.Item name="zalo_app_id" label="Zalo App ID">
                 <Input size="large" placeholder="ID ứng dụng Zalo Mini App" />
+              </Form.Item>
+
+              <Form.Item
+                name="zalo_secret_key"
+                label="Zalo Secret Key"
+                tooltip="App Secret lấy từ Zalo Developer Console — dùng để lấy số điện thoại người dùng"
+              >
+                <Input.Password size="large" placeholder="Secret Key của Zalo Mini App" />
               </Form.Item>
 
               <Form.Item name="google_map_url" label="Google Maps">
