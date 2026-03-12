@@ -43,4 +43,5 @@ class ExperienceRead(ExperienceBase):
     updated_by: Optional[int] = None
 
     class Config:
+        orm_mode = True
         from_attributes = True

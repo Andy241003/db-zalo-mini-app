@@ -15,7 +15,9 @@ class RoomFeatureRead(RoomFeatureBase):
     id: int
 
     class Config:
+        orm_mode = True
         from_attributes = True
+        orm_mode = True
         from_attributes = True
 
 class RoomFeatureUpdate(RoomFeatureBase):

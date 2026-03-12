@@ -37,6 +37,7 @@ class CustomerRead(CustomerBase):
     updated_at: datetime.datetime
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 class CustomerUpdate(CustomerBase):

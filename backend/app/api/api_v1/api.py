@@ -11,6 +11,7 @@ from app.api.api_v1.endpoints import (
     rooms,
     customers,
     booking_requests,
+    booking_management,
     promotions,  # Re-enabled for testing
     vouchers,
     services,
@@ -34,6 +35,7 @@ api_router.include_router(tenants.router, tags=["tenants"])
 api_router.include_router(rooms.router, tags=["rooms"])
 api_router.include_router(customers.router, tags=["customers"])
 api_router.include_router(booking_requests.router, tags=["booking-requests"])
+api_router.include_router(booking_management.router, tags=["booking-management"])
 api_router.include_router(promotions.router, tags=["promotions"])  # Re-enabled for testing
 api_router.include_router(vouchers.router, tags=["vouchers"])
 api_router.include_router(services.router, tags=["services"])

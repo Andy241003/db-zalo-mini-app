@@ -24,6 +24,7 @@ class CustomerVoucherRead(CustomerVoucherBase):
     updated_at: datetime.datetime
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 class CustomerVoucherUpdate(CustomerVoucherBase):

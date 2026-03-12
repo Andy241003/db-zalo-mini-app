@@ -43,4 +43,5 @@ class ServiceRead(ServiceBase):
     deleted: int
 
     class Config:
+        orm_mode = True
         from_attributes = True

@@ -55,6 +55,7 @@ class BookingRequestRead(BookingRequestBase):
     updated_at: datetime.datetime
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 class BookingRequestUpdate(BookingRequestBase):

@@ -29,6 +29,7 @@ class TestItemRead(TestItemBase):
     updated_at: datetime
 
     class Config:
+        orm_mode = True
         from_attributes = True
         json_encoders = {
             datetime: lambda dt: dt.isoformat() if dt else None

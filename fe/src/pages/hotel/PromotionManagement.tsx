@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { 
-  Card, Table, Button, Modal, Form, Input, Select, DatePicker, Row, Col, 
-  message, Space, Typography, Tag, Upload, Popconfirm
+  Card, Table, Button, Modal, Form, Input, InputNumber, Select, DatePicker, Row, Col, 
+  message, Space, Typography, Tag, Upload, Popconfirm, Tooltip
 } from 'antd';
 import { 
   PlusOutlined, EditOutlined, DeleteOutlined, 
   GiftOutlined, CalendarOutlined, PictureOutlined,
-  SearchOutlined, ClearOutlined, DownloadOutlined
+  SearchOutlined, ClearOutlined, DownloadOutlined, TagOutlined, CopyOutlined
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { request } from '../../api/request';
 import { authStore } from '../../stores/authStore';
+import { ImageField } from '../../components/ImagePickerModal';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -27,6 +30,12 @@ interface Promotion {
   end_date: string;
   banner_image?: string;
   status: string; // active, inactive, expired
+  type?: string; // campaign, voucher
+  code?: string;
+  discount_type?: string; // percentage, fixed
+  discount_value?: number;
+  max_usage?: number;
+  used_count?: number;
   created_at?: string;
   updated_at?: string;
   created_by?: string;
@@ -255,6 +264,54 @@ const PromotionManagement: React.FC = () => {
       ),
     },
     {
+      title: 'Loại',
+      dataIndex: 'type',
+      key: 'type',
+      width: 100,
+      render: (type: string) => (
+        <Tag icon={<TagOutlined />} color={type === 'voucher' ? 'purple' : 'blue'}>
+          {type === 'voucher' ? 'Voucher' : 'Campaign'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Mã / Giảm giá',
+      key: 'discount',
+      width: 150,
+      render: (record: Promotion) => (
+        <div>
+          {record.code && (
+            <div style={{ marginBottom: 2 }}>
+              <Tooltip title="Sao chép mã">
+                <Tag
+                  icon={<CopyOutlined />}
+                  style={{ cursor: 'pointer', fontFamily: 'monospace' }}
+                  onClick={() => { navigator.clipboard.writeText(record.code!); message.success('Đã sao chép mã'); }}
+                >
+                  {record.code}
+                </Tag>
+              </Tooltip>
+            </div>
+          )}
+          {record.discount_value != null && (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Giảm: {record.discount_type === 'percentage'
+                ? `${record.discount_value}%`
+                : `${record.discount_value?.toLocaleString('vi-VN')}đ`
+              }
+            </Text>
+          )}
+          {record.max_usage != null && (
+            <div>
+              <Text type="secondary" style={{ fontSize: 11 }}>
+                {record.used_count ?? 0}/{record.max_usage} lượt
+              </Text>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
       title: 'Trạng thái',
       key: 'status',
       width: 120,
@@ -438,6 +495,59 @@ const PromotionManagement: React.FC = () => {
             </Col>
           </Row>
 
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Loại khuyến mãi"
+                name="type"
+                initialValue="campaign"
+                rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
+              >
+                <Select placeholder="Chọn loại">
+                  <Option value="campaign">Campaign</Option>
+                  <Option value="voucher">Voucher</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Mã khuyến mãi"
+                name="code"
+              >
+                <Input placeholder="VD: SUMMER2026" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Loại giảm giá"
+                name="discount_type"
+              >
+                <Select placeholder="Chọn loại giảm" allowClear>
+                  <Option value="percentage">Phần trăm (%)</Option>
+                  <Option value="fixed">Số tiền cố định (đ)</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Giá trị giảm"
+                name="discount_value"
+              >
+                <InputNumber min={0} style={{ width: '100%' }} placeholder="VD: 10 hoặc 50000" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            label="Giới hạn số lần dùng"
+            name="max_usage"
+          >
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="Để trống = không giới hạn" />
+          </Form.Item>
+
           <Form.Item
             label="Mô tả"
             name="description"
@@ -460,7 +570,7 @@ const PromotionManagement: React.FC = () => {
             <Space direction="vertical" style={{ width: '100%' }}>
               <Upload
                 name="file"
-                action="https://zalominiapp.vtlink.vn/api/v1/upload/image"
+                action={`${API_BASE_URL}/api/v1/upload/image`}
                 data={{ folder: 'promotions' }}
                 headers={{
                   'Authorization': `Bearer ${authStore.getToken()}`
@@ -468,7 +578,7 @@ const PromotionManagement: React.FC = () => {
                 showUploadList={false}
                 onChange={(info) => {
                   if (info.file.status === 'done' && info.file.response?.success) {
-                    const imageUrl = `https://zalominiapp.vtlink.vn${info.file.response.data.url}`;
+                    const imageUrl = `${API_BASE_URL}${info.file.response.data.url}`;
                     form.setFieldsValue({ banner_image: imageUrl });
                   }
                 }}

@@ -25,6 +25,7 @@ class RoomStayRead(RoomStayBase):
     updated_at: datetime.datetime
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 class RoomStayUpdate(RoomStayBase):

@@ -12,6 +12,9 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { request } from '../../api/request';
 import { authStore } from '../../stores/authStore';
+import { ImageField } from '../../components/ImagePickerModal';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -604,28 +607,7 @@ const RoomManagement: React.FC = () => {
                 label="Hình ảnh phòng"
                 name="image_url"
               >
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Upload
-                    name="file"
-                    action="https://zalominiapp.vtlink.vn/api/v1/upload/image"
-                    data={{ folder: 'rooms' }}
-                    headers={{
-                      'Authorization': `Bearer ${authStore.getToken()}`
-                    }}
-                    showUploadList={false}
-                    onChange={(info) => {
-                      if (info.file.status === 'done' && info.file.response?.success) {
-                        const imageUrl = `https://zalominiapp.vtlink.vn${info.file.response.data.url}`;
-                        form.setFieldsValue({ image_url: imageUrl });
-                      }
-                    }}
-                  >
-                    <Button icon={<PictureOutlined />} style={{ width: '100%' }}>
-                      Tải lên ảnh
-                    </Button>
-                  </Upload>
-                  <Input placeholder="Hoặc nhập URL" />
-                </Space>
+                <ImageField folder="rooms" />
               </Form.Item>
             </Col>
             <Col span={8}>

@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { request } from '../../api/request';
 import { authStore } from '../../stores/authStore';
 import { getUploadUrl } from '../../config/api';
+import { ImageField } from '../../components/ImagePickerModal';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -420,28 +421,7 @@ const FacilityManagement: React.FC = () => {
                 label="Hình ảnh tiện ích"
                 name="image_url"
               >
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Upload
-                    name="file"
-                    action={getUploadUrl('/api/v1/upload/image')}
-                    data={{ folder: 'facilities' }}
-                    headers={{
-                      'Authorization': `Bearer ${authStore.getToken()}`
-                    }}
-                    showUploadList={false}
-                    onChange={(info) => {
-                      if (info.file.status === 'done' && info.file.response?.success) {
-                        const imageUrl = `${getUploadUrl('')}${info.file.response.data.url}`;
-                        form.setFieldsValue({ image_url: imageUrl });
-                      }
-                    }}
-                  >
-                    <Button icon={<PictureOutlined />} style={{ width: '100%' }}>
-                      Tải lên ảnh
-                    </Button>
-                  </Upload>
-                  <Input placeholder="Hoặc nhập URL" />
-                </Space>
+                <ImageField folder="facilities" />
               </Form.Item>
             </Col>
             <Col span={8}>

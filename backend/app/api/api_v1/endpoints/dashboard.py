@@ -466,7 +466,7 @@ def get_tenant_dashboard_stats(
         active_vouchers = db.query(func.count(TblVouchers.id)).filter(
             and_(
                 TblVouchers.tenant_id == tenant_id,
-                TblVouchers.is_active == True,
+                TblVouchers.status == 'active',
                 TblVouchers.deleted == 0
             )
         ).scalar() or 0

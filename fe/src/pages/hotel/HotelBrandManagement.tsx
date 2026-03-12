@@ -40,6 +40,9 @@ import {
 import { RcFile, UploadFile } from 'antd/es/upload/interface';
 import { authStore } from '../../stores/authStore';
 import { request } from '../../api/request';
+import { ImageField } from '../../components/ImagePickerModal';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -287,7 +290,7 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
       // Use the brand ID from current data for update
       if (brandData?.id) {
         console.log('Updating brand with ID:', brandData.id);
-        const response: any = await request('put', `/${brandData.id}`, payload);
+        const response: any = await request('put', `/hotel-brands/${brandData.id}`, payload);
         console.log('Update response:', response);
         if (response && response.success && response.data && isMountedRef.current) {
           setBrandData(response.data as HotelBrand);
@@ -297,7 +300,7 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
       } else {
         console.log('Creating new brand');
         // If no ID, create new brand
-        const response: any = await request('post', '', payload);
+        const response: any = await request('post', '/hotel-brands', payload);
         console.log('Create response:', response);
         if (response && response.success && response.data && isMountedRef.current) {
           setBrandData(response.data as HotelBrand);
@@ -336,7 +339,7 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
       const file = fileList[0];
       if (file.status === 'done' && file.response?.success && file.response?.data?.url) {
         // Real upload API returns URL
-        const logoUrl = `https://zalominiapp.vtlink.vn${file.response.data.url}`;
+        const logoUrl = `${API_BASE_URL}${file.response.data.url}`;
         form.setFieldsValue({ logo_url: logoUrl });
         setBrandData(prev => prev ? { ...prev, logo_url: logoUrl } : null);
         message.success('Logo uploaded successfully');
@@ -639,42 +642,8 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
           <Col xs={24} lg={12}>
             <Card title="Logo thương hiệu" size="small">
               <Form.Item name="logo_url" label="Logo chính">
-                <Input 
-                  placeholder="URL logo hoặc upload file"
-                  style={{ marginBottom: 8 }}
-                />
+                <ImageField folder="brands" placeholder="URL logo hoặc chọn ảnh bên dưới" />
               </Form.Item>
-              <div>
-                <Text>Hoặc upload file:</Text>
-                <div style={{ marginTop: 8 }}>
-                  <Upload
-                    name="file"
-                    action="https://zalominiapp.vtlink.vn/api/v1/upload/image"
-                    data={{ folder: 'brands' }}
-                    headers={{
-                      'Authorization': `Bearer ${authStore.getToken()}`
-                    }}
-                    listType="picture-card"
-                    className="logo-uploader"
-                    showUploadList={false}
-                    beforeUpload={beforeUpload}
-                    onChange={handleLogoUpload}
-                  >
-                    {brandData?.logo_url ? (
-                      <img 
-                        src={brandData.logo_url} 
-                        alt="logo" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <div>
-                        <PlusOutlined />
-                        <div style={{ marginTop: 8 }}>Upload Logo</div>
-                      </div>
-                    )}
-                  </Upload>
-                </div>
-              </div>
             </Card>
           </Col>
         </Row>
