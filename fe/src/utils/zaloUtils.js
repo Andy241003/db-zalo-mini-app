@@ -16,9 +16,10 @@ export class ZaloPhoneService {
   /**
    * [MAIN] Tự động lấy số điện thoại từ Zalo SDK rồi gọi backend
    * Gọi hàm này từ UI button "Lấy số điện thoại"
+   * @param {number} tenantId - ID của hotel/tenant đang dùng Mini App
    * @returns {Promise<string>} Số điện thoại
    */
-  async getPhoneFromZaloSDK() {
+  async getPhoneFromZaloSDK(tenantId) {
     if (!this.isZaloEnvironment()) {
       throw new Error('Không chạy trong môi trường Zalo Mini App. Vui lòng mở ứng dụng trong Zalo.');
     }
@@ -40,7 +41,7 @@ export class ZaloPhoneService {
       console.log('[Zalo] Got tokens, calling backend...');
 
       // Bước 2: Gửi token lên backend để lấy số điện thoại thật
-      return await this.resolvePhone(phoneToken, accessToken);
+      return await this.resolvePhone(phoneToken, accessToken, tenantId);
     } catch (error) {
       // Zalo SDK trả lỗi nếu người dùng từ chối quyền
       if (error?.code === -201) {
@@ -54,9 +55,10 @@ export class ZaloPhoneService {
    * Gọi backend để resolve số điện thoại từ token
    * @param {string} token - phone_token từ zmp.getPhoneNumber()
    * @param {string} accessToken - access_token từ zmp.getAccessToken()
+   * @param {number} tenantId - ID của hotel/tenant
    * @returns {Promise<string>} Số điện thoại
    */
-  async resolvePhone(token, accessToken) {
+  async resolvePhone(token, accessToken, tenantId) {
     const response = await fetch(`${API_BASE_URL}/api/v1/zalo/phone`, {
       method: 'POST',
       headers: {
@@ -65,6 +67,7 @@ export class ZaloPhoneService {
       body: JSON.stringify({
         token: token,
         access_token: accessToken,
+        tenant_id: tenantId,
       }),
     });
 

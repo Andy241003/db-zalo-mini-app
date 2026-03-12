@@ -140,6 +140,7 @@ class TblHotelBrands(Base):
     website_url = Column(String(255))
     zalo_oa_id = Column(String(50))
     zalo_app_id = Column(String(50))
+    zalo_secret_key = Column(String(100))
     facebook_url = Column(String(255))
     youtube_url = Column(String(255))
     tiktok_url = Column(String(255))

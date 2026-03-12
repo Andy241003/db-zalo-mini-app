@@ -1,11 +1,15 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import httpx
 import os
 import logging
 
+from sqlalchemy.orm import Session
+
 from app.schemas.zalo import ZaloPhoneRequest, ZaloPhoneResponse
 from app.core.config import settings
+from app.db.session_local import get_db
+from app.models.models import TblHotelBrands
 
 router = APIRouter()
 
@@ -94,19 +98,29 @@ async def test_zalo_connection():
         }
 
 @router.post("/phone", response_model=ZaloPhoneResponse)
-async def resolve_zalo_phone(request: ZaloPhoneRequest):
+async def resolve_zalo_phone(request: ZaloPhoneRequest, db: Session = Depends(get_db)):
     """
     Resolve Zalo Mini App phone number using Zalo Open API
     Reference: https://miniapp.zaloplatforms.com/documents/api/getPhoneNumber/
     """
     try:
-        # Get credentials from settings (with fallback to env)
-        secret_key = settings.ZALO_SECRET_KEY or os.getenv("ZALO_SECRET_KEY")
+        # Lấy secret_key từ DB theo tenant_id
+        hotel_brand = db.query(TblHotelBrands).filter(
+            TblHotelBrands.tenant_id == request.tenant_id,
+            TblHotelBrands.deleted == 0
+        ).first()
+
+        if not hotel_brand:
+            raise HTTPException(status_code=404, detail=f"Tenant {request.tenant_id} not found")
+
+        secret_key = hotel_brand.zalo_secret_key
         if not secret_key:
-            logger.error("ZALO_SECRET_KEY is not configured")
-            raise HTTPException(status_code=500, detail="Zalo configuration missing")
-        
-        logger.info(f"Calling Zalo API with code: {request.token[:10]}... and access_token: {request.access_token[:10]}...")
+            # Fallback về env nếu DB chưa có (giai đoạn migrate)
+            secret_key = settings.ZALO_SECRET_KEY or os.getenv("ZALO_SECRET_KEY")
+        if not secret_key:
+            raise HTTPException(status_code=500, detail="Zalo secret key chưa được cấu hình cho tenant này")
+
+        logger.info(f"Tenant {request.tenant_id}: calling Zalo API with code: {request.token[:10]}...")
         
         # Call Zalo Open API for phone number
         # According to the actual implementation, Zalo uses headers, not form-data

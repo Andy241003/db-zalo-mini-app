@@ -8,7 +8,7 @@ const { Text, Title } = Typography;
 // Khai báo zmp global (inject bởi Zalo WebView)
 declare const window: Window & { zmp?: unknown };
 
-const ZaloPhoneResolver = () => {
+const ZaloPhoneResolver = ({ tenantId }: { tenantId: number }) => {
   const [loading, setLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   // Fallback manual inputs (dùng khi test ngoài Zalo WebView)
@@ -26,14 +26,14 @@ const ZaloPhoneResolver = () => {
       let phone: string;
       if (isZaloEnv) {
         // Chạy trong Zalo Mini App: tự động lấy token từ SDK
-        phone = await zaloPhoneService.getPhoneFromZaloSDK();
+        phone = await zaloPhoneService.getPhoneFromZaloSDK(tenantId);
       } else {
         // Chạy ngoài Zalo (dev/test): dùng manual input
         if (!manualToken.trim() || !manualAccessToken.trim()) {
           message.error('Ngoài Zalo WebView: vui lòng nhập token và access_token thủ công');
           return;
         }
-        phone = await zaloPhoneService.resolvePhone(manualToken.trim(), manualAccessToken.trim());
+        phone = await zaloPhoneService.resolvePhone(manualToken.trim(), manualAccessToken.trim(), tenantId);
       }
 
       setPhoneNumber(phone);
