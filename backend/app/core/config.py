@@ -38,7 +38,8 @@ class Settings(BaseSettings):
         "https://157.10.199.22",
         "http://157.10.199.22",
         "http://157.10.199.22:8000",
-        "https://157.10.199.22:8000",
+        "https://mini.zalo.me",
+        "https://*.mini.123c.vn",
     ]
 
     PROJECT_NAME: str = "Zalo Mini App"
