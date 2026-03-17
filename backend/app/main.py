@@ -207,7 +207,7 @@ app.include_router(test_items.router, prefix="/api/v1/test-items", tags=["Test I
 app.include_router(zalo.router, prefix="/api/v1/zalo", tags=["Zalo Mini App"])
 
 # Mount static files for serving uploaded images
-uploads_dir = "uploads"
+uploads_dir = os.getenv("UPLOAD_DIR", "uploads")
 if not os.path.exists(uploads_dir):
-    os.makedirs(uploads_dir)
+    os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")

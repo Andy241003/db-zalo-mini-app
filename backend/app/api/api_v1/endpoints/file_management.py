@@ -9,6 +9,7 @@ import shutil
 from pathlib import Path
 
 from app.core.deps import get_db, get_current_admin_user
+from app.core.config import settings
 from app.models.models import TblAdminUsers
 
 router = APIRouter()
@@ -61,7 +62,7 @@ async def upload_image(
         
         # Create directory structure
         tenant_folder = f"tenant_{current_user.tenant_id}" if current_user.tenant_id else "global"
-        upload_dir = Path(f"uploads/{tenant_folder}/{folder}/images")
+        upload_dir = Path(settings.UPLOAD_DIR) / tenant_folder / folder / "images"
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate unique filename
@@ -113,7 +114,7 @@ async def upload_video(
         
         # Create directory structure
         tenant_folder = f"tenant_{current_user.tenant_id}" if current_user.tenant_id else "global"
-        upload_dir = Path(f"uploads/{tenant_folder}/{folder}/videos")
+        upload_dir = Path(settings.UPLOAD_DIR) / tenant_folder / folder / "videos"
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate unique filename
