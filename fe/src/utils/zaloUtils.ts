@@ -8,9 +8,9 @@ declare const window: Window & {
   };
 };
 
-const API_BASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
-  'https://db-zalo-mini-app-be.onrender.com';
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
+const envApiUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || '';
+const API_BASE_URL = envApiUrl || `${HOST_ORIGIN}/api/v1`;
 
 export class ZaloPhoneService {
   /**
@@ -34,9 +34,10 @@ export class ZaloPhoneService {
     try {
       // Bước 1: Lấy phone_token và access_token song song
       console.log('[Zalo] Calling zmp.getPhoneNumber() and zmp.getAccessToken()...');
+      const zmp = window.zmp!;
       const [phoneResult, accessTokenResult] = await Promise.all([
-        window.zmp.getPhoneNumber(),
-        window.zmp.getAccessToken(),
+        zmp.getPhoneNumber(),
+        zmp.getAccessToken(),
       ]);
 
       const phoneToken = phoneResult?.token;

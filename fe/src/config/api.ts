@@ -1,7 +1,10 @@
 // API Configuration for different environments
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
+const envBaseURL = (import.meta.env.VITE_API_BASE_URL as string) || '';
+
 export const API_CONFIG = {
-  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com',
-  uploadURL: (import.meta.env.VITE_API_BASE_URL as string)?.replace('/api', '') || 'https://db-zalo-mini-app-be.onrender.com',
+  baseURL: envBaseURL || `${HOST_ORIGIN}/api/v1`,
+  uploadURL: envBaseURL ? envBaseURL.replace(/\/api\/?$/, '') : HOST_ORIGIN,
 }
 
 // Helper functions

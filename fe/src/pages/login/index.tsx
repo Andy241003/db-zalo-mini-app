@@ -24,7 +24,8 @@ const LoginForm: React.FC = () => {
         formData.append('username', data.username);
         formData.append('password', data.password);
 
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://zalominiapp.vtlink.vn'}/api/v1/auth/login`, {
+        const backendUrl = (import.meta.env.VITE_API_BASE_URL as string) || `${window.location.origin}/api/v1`;
+        const response = await fetch(`${backendUrl}/auth/login`, {
           method: 'POST',
           body: formData,
         });
@@ -37,7 +38,7 @@ const LoginForm: React.FC = () => {
         const tokenData = await response.json();
         
         // Get user info using test-token endpoint
-        const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://zalominiapp.vtlink.vn'}/api/v1/auth/test-token`, {
+        const userResponse = await fetch(`${backendUrl}/auth/test-token`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${tokenData.access_token}`,

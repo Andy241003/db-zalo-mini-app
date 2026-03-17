@@ -7,7 +7,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { request } from '../api/request';
 import { authStore } from '../stores/authStore';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com';
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
+const envApiUrl = (import.meta.env.VITE_API_BASE_URL as string) || '';
+const API_BASE_URL = envApiUrl || `${HOST_ORIGIN}/api/v1`; // used for listing/upload endpoints
+const UPLOAD_BASE_URL = envApiUrl ? envApiUrl.replace(/\/api\/?$/, '') : HOST_ORIGIN;
 
 // ─── Standalone modal ────────────────────────────────────────────────────────
 

@@ -7,8 +7,11 @@ import store from '@/stores';
 import { setGlobalState } from '@/stores/global.store';
 // import { history } from '@/routes/history';
 
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
+const baseURL = (import.meta.env.VITE_API_BASE_URL as string) || `${HOST_ORIGIN}/api/v1`;
+
 const axiosInstance = axios.create({
-  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com',
+  baseURL,
   timeout: 15000,
 });
 

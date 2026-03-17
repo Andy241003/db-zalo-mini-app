@@ -14,7 +14,8 @@ import { request } from '../../api/request';
 import { authStore } from '../../stores/authStore';
 import { ImageField } from '../../components/ImagePickerModal';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com';
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || `${HOST_ORIGIN}/api/v1`;
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;

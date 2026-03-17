@@ -460,7 +460,7 @@ const PromotionManagement: React.FC = () => {
             <Space direction="vertical" style={{ width: '100%' }}>
               <Upload
                 name="file"
-                action="https://zalominiapp.vtlink.vn/api/v1/upload/image"
+                action={`${(import.meta.env.VITE_API_BASE_URL as string) || `${window.location.origin}/api/v1`}/upload/image`}
                 data={{ folder: 'promotions' }}
                 headers={{
                   'Authorization': `Bearer ${authStore.getToken()}`
@@ -468,7 +468,8 @@ const PromotionManagement: React.FC = () => {
                 showUploadList={false}
                 onChange={(info) => {
                   if (info.file.status === 'done' && info.file.response?.success) {
-                    const imageUrl = `https://zalominiapp.vtlink.vn${info.file.response.data.url}`;
+                    const baseUrl = (import.meta.env.VITE_API_BASE_URL as string) || `${window.location.origin}/api/v1`;
+                    const imageUrl = `${baseUrl.replace(/\/api\/?$/, '')}${info.file.response.data.url}`;
                     form.setFieldsValue({ banner_image: imageUrl });
                   }
                 }}

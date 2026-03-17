@@ -3,8 +3,9 @@ import { authStore } from '../stores/authStore';
 import { tenantStore } from '../stores/tenantStore';
 
 // Create typed axios instance
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com',
+  baseURL: (import.meta.env.VITE_API_BASE_URL as string) || `${HOST_ORIGIN}/api/v1`,
   timeout: 15000,
 });
 

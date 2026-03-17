@@ -3,8 +3,10 @@ import { message } from 'antd';
 import { auth } from '@/store/auth';
 
 // Create axios instance
+const HOST_ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8889';
+const backendBaseURL = (import.meta.env.VITE_API_BASE_URL as string) || `${HOST_ORIGIN}/api/v1`;
 const http = axios.create({
-  baseURL: `${(import.meta.env.VITE_API_BASE_URL as string) || 'https://db-zalo-mini-app-be.onrender.com'}/api/v1`,
+  baseURL: backendBaseURL,
   timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
