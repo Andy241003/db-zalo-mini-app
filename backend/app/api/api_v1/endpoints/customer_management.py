@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel
 
 from app.core.deps import get_db, get_current_admin_user
-from app.models.models import TblCustomers, TblAdminUsers, TblBookingRequests, TblCustomerVouchers
+from app.models.models import TblCustomers, TblAdminUsers, TblBookingRequests, TblCustomerVouchers, TblVouchers, TblPromotions
 from app.schemas.customers import CustomerUpdate
 
 router = APIRouter()
@@ -205,23 +205,34 @@ def get_customer_detailed_profile(
                 "created_at": booking.created_at.isoformat()
             })
         
-        # Get vouchers
-        vouchers = db.query(TblCustomerVouchers).filter(
-            and_(
-                TblCustomerVouchers.customer_id == customer_id,
-                TblCustomerVouchers.deleted == 0
+        # Get vouchers — join TblPromotions trực tiếp
+        voucher_rows = (
+            db.query(TblCustomerVouchers, TblPromotions)
+            .outerjoin(TblPromotions, TblCustomerVouchers.promotion_id == TblPromotions.id)
+            .filter(
+                and_(
+                    TblCustomerVouchers.customer_id == customer_id,
+                    TblCustomerVouchers.deleted == 0
+                )
             )
-        ).order_by(TblCustomerVouchers.created_at.desc()).limit(10).all()
-        
+            .order_by(TblCustomerVouchers.created_at.desc())
+            .limit(10)
+            .all()
+        )
+
         voucher_list = []
-        for voucher in vouchers:
+        for cv, p in voucher_rows:
             voucher_list.append({
-                "id": voucher.id,
-                "voucher_code": voucher.voucher_code,
-                "discount_amount": float(voucher.discount_amount or 0),
-                "is_used": voucher.is_used,
-                "used_date": voucher.used_date.isoformat() if voucher.used_date else None,
-                "expiry_date": voucher.expiry_date.isoformat() if voucher.expiry_date else None
+                "id": cv.id,
+                "promotion_id": cv.promotion_id,
+                "title": p.title if p else None,
+                "discount_type": p.discount_type if p else None,
+                "discount_amount": float(p.discount_value or 0) if p else 0,
+                "is_used": bool(cv.is_used),
+                "status": cv.status,
+                "used_at": cv.used_at.isoformat() if cv.used_at else None,
+                "assigned_date": cv.assigned_date.isoformat() if cv.assigned_date else None,
+                "expiry_date": p.end_date.isoformat() if p and p.end_date else None
             })
         
         # Calculate statistics
@@ -265,7 +276,7 @@ def get_customer_detailed_profile(
                 "average_booking_value": float(total_spent) / max(customer.total_bookings, 1),
                 "cancelled_bookings": cancelled_bookings,
                 "vouchers_count": len(voucher_list),
-                "active_vouchers": len([v for v in voucher_list if not v["is_used"]])
+                "active_vouchers": len([v for v in voucher_list if v["status"] == "active" and not v["is_used"]])
             },
             "booking_history": booking_history,
             "vouchers": voucher_list

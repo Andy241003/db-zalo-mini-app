@@ -272,12 +272,13 @@ class TblCustomerVouchers(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     tenant_id = Column(Integer, nullable=False, index=True)
     customer_id = Column(Integer, ForeignKey('tbl_customers.id'))
-    voucher_id = Column(Integer, ForeignKey('tbl_vouchers.id'))
+    promotion_id = Column(Integer, ForeignKey('tbl_promotions.id'), nullable=True)  # direct link to promotion
+    voucher_id = Column(Integer, ForeignKey('tbl_vouchers.id'), nullable=True)     # legacy, nullable
     used_at = Column(DateTime)
     booking_request_id = Column(Integer, ForeignKey('tbl_booking_requests.id'))
     is_used = Column(Boolean, default=False)
     assigned_date = Column(DateTime, default=func.current_timestamp())
-    status = Column(String(20), default='active')
+    status = Column(String(20), default='assigned')  # assigned | used | expired
     created_at = Column(DateTime, nullable=False, default=func.current_timestamp())
     updated_at = Column(DateTime, nullable=False, default=func.current_timestamp(), onupdate=func.current_timestamp())
     created_by = Column(String(50))

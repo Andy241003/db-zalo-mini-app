@@ -5,10 +5,13 @@ import datetime
 class CustomerVoucherBase(BaseModel):
     tenant_id: int
     customer_id: int
-    voucher_id: int
-    assigned_date: datetime.datetime
-    used_date: Optional[datetime.datetime] = None
-    status: Optional[str] = None
+    promotion_id: Optional[int] = None              # direct promotion claim
+    voucher_id: Optional[int] = None                # legacy optional
+    assigned_date: Optional[datetime.datetime] = None
+    used_at: Optional[datetime.datetime] = None
+    is_used: Optional[bool] = False
+    status: Optional[str] = None                    # assigned | used | expired
+    booking_request_id: Optional[int] = None
     created_by: Optional[str] = None
     updated_by: Optional[str] = None
     deleted: Optional[int] = None
