@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Union
 from decimal import Decimal
 
 # Base service schema
@@ -8,11 +8,21 @@ class ServiceBase(BaseModel):
     service_name: Optional[str] = None
     description: Optional[str] = None
     type: Optional[str] = None
-    image_url: Optional[List[str]] = None  # array of image URLs for slideshow
+    image_url: Optional[Union[str, List[str]]] = None  # array of image URLs for slideshow
     price: Optional[Decimal] = None
     unit: Optional[str] = None
     duration_minutes: Optional[int] = None
     requires_schedule: Optional[bool] = True
+
+    @validator('image_url', pre=True)
+    def normalize_image_url(cls, v):
+        if v is None or v == '':
+            return None
+        if isinstance(v, str):
+            return [v]
+        if isinstance(v, list):
+            return v
+        raise ValueError('image_url must be a string or list of strings')
 
 # Schema for creating service (request from user)
 class ServiceCreateRequest(ServiceBase):
