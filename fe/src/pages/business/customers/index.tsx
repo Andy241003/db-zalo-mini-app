@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Select, DatePicker, InputNumber, message, Space, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Select, DatePicker, InputNumber, message, Space, Card, Row, Col, Statistic } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer, Customer, CustomerCreate, CustomerUpdate } from '../../../api/customer.api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import dayjs from 'dayjs';
@@ -14,6 +14,10 @@ const CustomersPage: React.FC = () => {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [form] = Form.useForm();
   const { tenantId } = useTenantScope();
+  const [searchText, setSearchText] = useState('');
+  const [membershipFilter, setMembershipFilter] = useState<string>('all');
+  const [genderFilter, setGenderFilter] = useState<string>('all');
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
   const genderOptions = [
     { value: 'male', label: 'Male' },
@@ -51,6 +55,17 @@ const CustomersPage: React.FC = () => {
   useEffect(() => {
     fetchCustomers();
   }, [tenantId]);
+
+  const filteredCustomers = customers.filter((customer) => {
+    const q = searchText.trim().toLowerCase();
+    const matchesSearch = !q ||
+      customer.customer_name?.toLowerCase().includes(q) ||
+      customer.email?.toLowerCase().includes(q) ||
+      customer.phone_number?.toLowerCase().includes(q);
+    const matchesMembership = membershipFilter === 'all' || customer.membership_level === membershipFilter;
+    const matchesGender = genderFilter === 'all' || customer.gender === genderFilter;
+    return matchesSearch && matchesMembership && matchesGender;
+  });
 
   const handleOk = async () => {
     try {
@@ -113,73 +128,183 @@ const CustomersPage: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (customerId: number) => {
-    try {
-      setLoading(true);
-      const response = await deleteCustomer(tenantId!, customerId);
-      if (response.status) {
-        message.success('Customer deleted successfully');
-        fetchCustomers();
-      } else {
-        throw new Error(response.message || 'Failed to delete customer');
-      }
-    } catch (error: any) {
-      console.error('Error deleting customer:', error);
-      message.error(error.message || 'Failed to delete customer');
-    } finally {
-      setLoading(false);
-    }
+  const handleDelete = (customerId: number) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: 'Bạn có chắc chắn muốn xóa khách hàng này không?',
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          setLoading(true);
+          const response = await deleteCustomer(tenantId!, customerId);
+          if (response.status) {
+            message.success('Xóa khách hàng thành công');
+            fetchCustomers();
+          } else {
+            throw new Error(response.message || 'Không thể xóa khách hàng');
+          }
+        } catch (error: any) {
+          message.error(error.message || 'Không thể xóa khách hàng');
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchText('');
+    setMembershipFilter('all');
+    setGenderFilter('all');
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
-    { title: 'Name', dataIndex: 'customer_name', key: 'customer_name', width: 150 },
-    { title: 'Email', dataIndex: 'email', key: 'email', width: 200 },
-    { title: 'Phone', dataIndex: 'phone_number', key: 'phone_number', width: 120 },
-    { title: 'City', dataIndex: 'city', key: 'city', width: 100 },
-    { title: 'Membership', dataIndex: 'membership_level', key: 'membership_level', width: 100 },
-    { title: 'Points', dataIndex: 'loyalty_points', key: 'loyalty_points', width: 80 },
     {
-      title: 'Action',
+      title: 'STT',
+      key: 'stt',
+      width: 70,
+      render: (_: any, __: any, index: number) => {
+        const { current = 1, pageSize = 10 } = pagination;
+        return (current - 1) * pageSize + index + 1;
+      },
+    },
+    { title: 'Tên khách hàng', dataIndex: 'customer_name', key: 'customer_name', width: 150 },
+    { title: 'Email', dataIndex: 'email', key: 'email', width: 200 },
+    { title: 'Điện thoại', dataIndex: 'phone_number', key: 'phone_number', width: 120 },
+    { title: 'Thành phố', dataIndex: 'city', key: 'city', width: 100 },
+    { title: 'Hạng thành viên', dataIndex: 'membership_level', key: 'membership_level', width: 130 },
+    { title: 'Điểm', dataIndex: 'loyalty_points', key: 'loyalty_points', width: 80 },
+    {
+      title: 'Thao tác',
       key: 'action',
       fixed: 'right' as const,
       width: 150,
       render: (_: any, record: Customer) => (
-        <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>Edit</Button>
-          <Popconfirm
-            title="Are you sure to delete this customer?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button icon={<DeleteOutlined />} danger>Delete</Button>
-          </Popconfirm>
+        <Space>
+          <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+            Sửa
+          </Button>
+          <Button danger size="small" icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>
+            Xóa
+          </Button>
         </Space>
       ),
     },
   ];
 
   return (
-    <div>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={handleAdd}
-        style={{ marginBottom: 16 }}
-      >
-        Add Customer
-      </Button>
+    <div style={{ padding: '24px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>Quản lý khách hàng</h2>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={fetchCustomers} loading={loading}>
+            Làm mới
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+            Tạo mới
+          </Button>
+        </Space>
+      </div>
+
+      {/* Thống kê */}
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic title="Tổng khách hàng" value={customers.length} prefix={<SearchOutlined style={{ color: '#1890ff' }} />} />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic title="Kết quả lọc" value={filteredCustomers.length} prefix={<FilterOutlined style={{ color: '#52c41a' }} />} />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="Thành viên VIP"
+              value={customers.filter(c => ['gold', 'platinum', 'diamond'].includes(c.membership_level || '')).length}
+              valueStyle={{ color: '#faad14' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="Tổng điểm tích lũy"
+              value={customers.reduce((sum, c) => sum + (c.loyalty_points || 0), 0)}
+              valueStyle={{ color: '#722ed1' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Tìm kiếm & Bộ lọc */}
+      <Card style={{ marginBottom: 16 }}>
+        <Row gutter={16} align="middle">
+          <Col span={8}>
+            <Input.Search
+              placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+              allowClear
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onSearch={setSearchText}
+            />
+          </Col>
+          <Col span={4}>
+            <Select
+              style={{ width: '100%' }}
+              value={membershipFilter}
+              onChange={setMembershipFilter}
+              options={[
+                { label: 'Tất cả hạng', value: 'all' },
+                ...membershipLevels.map((level) => ({ label: level.label, value: level.value })),
+              ]}
+            />
+          </Col>
+          <Col span={4}>
+            <Select
+              style={{ width: '100%' }}
+              value={genderFilter}
+              onChange={setGenderFilter}
+              options={[
+                { label: 'Tất cả giới tính', value: 'all' },
+                { label: 'Nam', value: 'male' },
+                { label: 'Nữ', value: 'female' },
+                { label: 'Khác', value: 'other' },
+              ]}
+            />
+          </Col>
+          <Col span={4}>
+            Hiển thị: <strong>{filteredCustomers.length}</strong>
+          </Col>
+          <Col span={4}>
+            <Button onClick={resetFilters} icon={<FilterOutlined />}>
+              Đặt lại
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+
       <Table
         columns={columns}
-        dataSource={customers}
+        dataSource={filteredCustomers}
         rowKey="id"
         loading={loading}
-        bordered
         scroll={{ x: 1200 }}
+        pagination={{
+          ...pagination,
+          total: filteredCustomers.length,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} khách hàng`,
+          onChange: (page, pageSize) => setPagination({ current: page, pageSize: pageSize || 10 }),
+        }}
       />
       <Modal
-        title={editingCustomer ? 'Edit Customer' : 'Add Customer'}
+        title={editingCustomer ? 'Chỉnh sửa khách hàng' : 'Thêm khách hàng mới'}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}

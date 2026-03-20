@@ -28,9 +28,7 @@ interface CustomIconProps {
 
 export const CustomIcon: FC<CustomIconProps> = props => {
   const { type } = props;
-  
-  console.log('🚀 CustomIcon type received:', type);
-  
+
   // Use Ant Design icons for hotel management
   switch (type) {
     case 'dashboard':

@@ -132,11 +132,10 @@ const CustomerAnalytics: React.FC = () => {
   ];
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <Title level={2} style={{ margin: 0 }}>Phân tích Khách hàng</Title>
-          <Text type="secondary">Thống kê và phân tích hành vi khách hàng</Text>
         </div>
         <Space>
           <Button icon={<ExportOutlined />}>
@@ -147,7 +146,7 @@ const CustomerAnalytics: React.FC = () => {
 
       {/* Analytics Overview */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+        <Col span={12}>
           <Card>
             <Statistic
               title="Tổng khách hàng"
@@ -157,7 +156,7 @@ const CustomerAnalytics: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={12}>
           <Card>
             <Statistic
               title="Khách hàng mới"
@@ -165,75 +164,6 @@ const CustomerAnalytics: React.FC = () => {
               prefix={<HeartOutlined style={{ color: '#52c41a' }} />}
               valueStyle={{ color: '#52c41a' }}
             />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tổng doanh thu"
-              value={2500000}
-              prefix={<DollarOutlined style={{ color: '#f50' }} />}
-              valueStyle={{ color: '#f50' }}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              suffix="đ"
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Tỷ lệ quay lại"
-              value={68}
-              prefix={<CalendarOutlined style={{ color: '#722ed1' }} />}
-              valueStyle={{ color: '#722ed1' }}
-              suffix="%"
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Customer Segments */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={12}>
-          <Card title="Phân khúc khách hàng" size="small">
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>Có email</span>
-                <span>{customers.filter(c => c.email).length}</span>
-              </div>
-              <Progress percent={(customers.filter(c => c.email).length / (customers.length || 1)) * 100} strokeColor="#52c41a" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>Có số điện thoại</span>
-                <span>{customers.filter(c => c.phone).length}</span>
-              </div>
-              <Progress percent={(customers.filter(c => c.phone).length / (customers.length || 1)) * 100} strokeColor="#1890ff" />
-            </div>
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card title="Thống kê theo tháng" size="small">
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>Tháng này</span>
-                <span>{currentMonthCustomers}</span>
-              </div>
-              <Progress 
-                percent={(currentMonthCustomers / (customers.length || 1)) * 100} 
-                strokeColor="#52c41a" 
-              />
-            </div>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span>Tháng trước</span>
-                <span>{lastMonthCustomers}</span>
-              </div>
-              <Progress 
-                percent={(lastMonthCustomers / (customers.length || 1)) * 100} 
-                strokeColor="#1890ff" 
-              />
-            </div>
           </Card>
         </Col>
       </Row>
@@ -256,7 +186,6 @@ const CustomerAnalytics: React.FC = () => {
               style={{ width: '100%' }}
               onClick={() => {
                 // Export logic here
-                console.log('Export customers');
               }}
             >
               Xuất Excel

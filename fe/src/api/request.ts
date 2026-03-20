@@ -23,13 +23,7 @@ axiosInstance.interceptors.request.use(
       }),
     );
     
-    console.log('API Request:', {
-      method: config.method,
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`
-    });
-    
+
     // Attach Authorization header if token exists
     try {
       // Try to get token from authState first, then fallback to direct token
@@ -44,11 +38,9 @@ axiosInstance.interceptors.request.use(
         token = localStorage.getItem('token');
       }
       
-      console.log('Request interceptor - Token:', token ? 'EXISTS' : 'MISSING');
       if (token) {
         config.headers = config.headers || {};
         (config.headers as any)['Authorization'] = `Bearer ${token}`;
-        console.log('Request interceptor - Authorization header set');
       }
       
       // Multi-tenant header injection
@@ -57,23 +49,13 @@ axiosInstance.interceptors.request.use(
       // Try to get tenant ID from auth state first
       if (authState) {
         const parsed = JSON.parse(authState);
-        console.log('Request interceptor - Parsed auth state:', parsed);
         const role = parsed.role;
         
         if (role === 'SUPER_ADMIN' || role === 'super_admin') {
           // Super admin can access any tenant - get from JWT or default to tenant_id from request
-          console.log('Super admin detected - will use JWT tenant_id');
         } else if (role === 'HOTEL_ADMIN' || role === 'hotel_admin') {
           // Hotel admin uses their own tenant ID
           tenantId = parsed.tenantId || parsed.tenant_id || (parsed.user && parsed.user.tenant_id);
-          console.log('Hotel admin tenant ID lookup:', {
-            tenantId: parsed.tenantId,
-            tenant_id: parsed.tenant_id,
-            user_tenant_id: parsed.user && parsed.user.tenant_id,
-            selected: tenantId
-          });
-        } else {
-          console.log('Unknown role:', role, '- will try to get tenant from JWT');
         }
       }
       
@@ -83,9 +65,7 @@ axiosInstance.interceptors.request.use(
           const tokenParts = token.split('.');
           if (tokenParts.length === 3) {
             const payload = JSON.parse(atob(tokenParts[1]));
-            console.log('JWT payload:', payload);
             tenantId = payload.tenant_id;
-            console.log('Tenant ID from JWT:', tenantId);
           }
         } catch (e) {
           console.error('Failed to decode JWT:', e);
@@ -95,14 +75,9 @@ axiosInstance.interceptors.request.use(
       if (tenantId) {
         config.headers = config.headers || {};
         (config.headers as any)['X-Tenant-Id'] = tenantId.toString();
-        console.log('Added X-Tenant-Id header:', tenantId);
       } else {
         console.warn('No tenant ID found - request may fail');
       }
-      
-      console.log('Final request headers:', config.headers);
-      console.log('Request URL:', (config.baseURL || '') + (config.url || ''));
-      console.log('Request params:', config.params);
     } catch (e) {
       console.error('Request interceptor - Token error:', e);
     }

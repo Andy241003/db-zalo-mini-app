@@ -90,7 +90,6 @@ export const useGuide = () => {
         }),
       );
       driver.current.start();
-      console.log('guide started');
     }, 1000);
   };
 

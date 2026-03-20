@@ -248,9 +248,6 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
         
         setBrandData(brandData); // Keep original data for save
         form.setFieldsValue(formData); // Set processed data for form display
-        
-        console.log('Loaded brand data:', brandData);
-        console.log('Form data:', formData);
       }
     } catch (error) {
       console.error('Error fetching brand data:', error);
@@ -283,26 +280,17 @@ const HotelBrandManagement: React.FC<HotelBrandManagementProps> = ({ onCancel, o
       
       const payload = { ...brandData, ...processedValues };
       
-      console.log('Form values:', values);
-      console.log('Processed values:', processedValues);
-      console.log('Brand data:', brandData);
-      console.log('Final payload:', payload);
-      
       // Use the brand ID from current data for update
       if (brandData?.id) {
-        console.log('Updating brand with ID:', brandData.id);
         const response: any = await request('put', `/hotel-brands/${brandData.id}`, payload);
-        console.log('Update response:', response);
         if (response && response.success && response.data && isMountedRef.current) {
           setBrandData(response.data as HotelBrand);
           message.success('Lưu thông tin thương hiệu thành công!');
           onSave?.(); // Call the callback
         }
       } else {
-        console.log('Creating new brand');
         // If no ID, create new brand
         const response: any = await request('post', '/hotel-brands', payload);
-        console.log('Create response:', response);
         if (response && response.success && response.data && isMountedRef.current) {
           setBrandData(response.data as HotelBrand);
           message.success('Tạo thương hiệu mới thành công!');

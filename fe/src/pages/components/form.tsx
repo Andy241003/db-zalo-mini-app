@@ -12,9 +12,7 @@ interface Data {
 }
 
 const FormPage: FC = () => {
-  const onFinish = (value: any) => {
-    console.log(value);
-  };
+  const onFinish = (_value: any) => {};
 
   return (
     <MyForm<Data> onFinish={onFinish}>

@@ -163,16 +163,13 @@ const VouchersPage: React.FC = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Card>
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-          <Col>
-            <Title level={3} style={{ margin: 0 }}>
-              Customer&apos;s Promotion
-            </Title>
-            <Text type="secondary">Danh sách ưu đãi khách hàng</Text>
-          </Col>
-        </Row>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0 }}>
+          Customer&apos;s Promotion
+        </Title>
+      </div>
 
+      <Card>
         <Row gutter={12} style={{ marginBottom: 16 }}>
           <Col>
             <Tag color="default">Total: {summary.total}</Tag>

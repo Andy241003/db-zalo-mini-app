@@ -53,10 +53,8 @@ export interface ServiceUpdate {
  */
 export const getServices = async (tenantId: number) => {
   try {
-    console.log('Calling getServices API with tenantId:', tenantId);
     const response = await request<Service[]>('get', `/services?tenant_id=${tenantId}`);
-    console.log('getServices API response:', response);
-    
+
     // Backend returns direct array, not wrapped in response object
     if (Array.isArray(response)) {
       return { status: true, result: response };
@@ -80,10 +78,8 @@ export const getServices = async (tenantId: number) => {
  */
 export const createService = async (tenantId: number, data: ServiceCreate) => {
   try {
-    console.log('Calling createService API with:', { tenantId, data });
     const response = await request<Service>('post', `/services?tenant_id=${tenantId}`, data);
-    console.log('createService API response:', response);
-    
+
     // Handle response format
     if (response && (response as any).id) {
       return { status: true, result: response as unknown as Service };

@@ -20,20 +20,11 @@ const { Title } = Typography;
 
 const DashBoardPage: React.FC = () => {
   const { hasSelectedTenant, isSuperAdmin, isHotelAdmin } = useTenantScope();
-  
-  // Debug log to check user role
-  console.log('Dashboard Debug:', {
-    isSuperAdmin,
-    isHotelAdmin,
-    hasSelectedTenant,
-    authData: auth.get(),
-    userRole: auth.get().user?.role
-  });
+
 
   // Force check: if user role is super_admin, show SuperAdminDashboard
   const userRole = auth.get().user?.role;
   if (userRole === 'super_admin') {
-    console.log('Rendering SuperAdminDashboard for super_admin user');
     return (
       <div style={{ padding: '24px' }}>
         <h1>🎯 SUPER ADMIN DASHBOARD</h1>

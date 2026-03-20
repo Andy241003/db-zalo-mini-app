@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Select, DatePicker, InputNumber, Switch, Tag, message, Space, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Select, DatePicker, InputNumber, Switch, Tag, message, Space, Card, Row, Col, Statistic } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import { getVouchers, createVoucher, updateVoucher, deleteVoucher, Voucher, VoucherCreate, VoucherUpdate } from '../../../api/voucher.api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import dayjs from 'dayjs';
@@ -15,6 +15,9 @@ const VouchersPage: React.FC = () => {
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
   const [form] = Form.useForm();
   const { tenantId } = useTenantScope();
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
   const discountTypes = [
     { value: 'percentage', label: 'Percentage' },
@@ -43,6 +46,19 @@ const VouchersPage: React.FC = () => {
   useEffect(() => {
     fetchVouchers();
   }, [tenantId]);
+
+  const filteredVouchers = vouchers.filter((voucher) => {
+    const q = searchText.trim().toLowerCase();
+    const matchesSearch = !q ||
+      voucher.voucher_code?.toLowerCase().includes(q) ||
+      voucher.voucher_name?.toLowerCase().includes(q) ||
+      voucher.description?.toLowerCase().includes(q);
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && voucher.is_active) ||
+      (statusFilter === 'inactive' && !voucher.is_active);
+    return matchesSearch && matchesStatus;
+  });
 
   const handleOk = async () => {
     try {
@@ -110,109 +126,203 @@ const VouchersPage: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (voucherId: number) => {
-    try {
-      setLoading(true);
-      const response = await deleteVoucher(tenantId!, voucherId);
-      if (response.status) {
-        message.success('Voucher deleted successfully');
-        fetchVouchers();
-      } else {
-        throw new Error(response.message || 'Failed to delete voucher');
-      }
-    } catch (error: any) {
-      console.error('Error deleting voucher:', error);
-      message.error(error.message || 'Failed to delete voucher');
-    } finally {
-      setLoading(false);
-    }
+  const handleDelete = (voucherId: number) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: 'Bạn có chắc chắn muốn xóa voucher này không?',
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          setLoading(true);
+          const response = await deleteVoucher(tenantId!, voucherId);
+          if (response.status) {
+            message.success('Xóa voucher thành công');
+            fetchVouchers();
+          } else {
+            throw new Error(response.message || 'Không thể xóa voucher');
+          }
+        } catch (error: any) {
+          message.error(error.message || 'Không thể xóa voucher');
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchText('');
+    setStatusFilter('all');
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
-    { title: 'Code', dataIndex: 'voucher_code', key: 'voucher_code', width: 120 },
-    { title: 'Name', dataIndex: 'voucher_name', key: 'voucher_name', width: 150 },
-    { 
-      title: 'Discount', 
-      key: 'discount', 
+    {
+      title: 'STT',
+      key: 'stt',
+      width: 70,
+      render: (_: any, __: any, index: number) => {
+        const { current = 1, pageSize = 10 } = pagination;
+        return (current - 1) * pageSize + index + 1;
+      },
+    },
+    { title: 'Mã voucher', dataIndex: 'voucher_code', key: 'voucher_code', width: 120 },
+    { title: 'Tên voucher', dataIndex: 'voucher_name', key: 'voucher_name', width: 150 },
+    {
+      title: 'Giảm giá',
+      key: 'discount',
       width: 120,
       render: (_: any, record: Voucher) => (
         <span>
-          {record.discount_type === 'percentage' 
-            ? `${record.discount_value}%` 
+          {record.discount_type === 'percentage'
+            ? `${record.discount_value}%`
             : `$${record.discount_value}`
           }
         </span>
       )
     },
-    { title: 'Min Order', dataIndex: 'min_order_value', key: 'min_order_value', width: 100 },
-    { title: 'Usage', key: 'usage', width: 80, render: (_: any, record: Voucher) => `${record.used_count || 0}/${record.usage_limit || '∞'}` },
-    { 
-      title: 'Valid From', 
-      dataIndex: 'valid_from', 
-      key: 'valid_from', 
+    { title: 'Đơn tối thiểu', dataIndex: 'min_order_value', key: 'min_order_value', width: 110 },
+    { title: 'Lượt dùng', key: 'usage', width: 90, render: (_: any, record: Voucher) => `${record.used_count || 0}/${record.usage_limit || '∞'}` },
+    {
+      title: 'Từ ngày',
+      dataIndex: 'valid_from',
+      key: 'valid_from',
       width: 100,
       render: (date: string) => date ? dayjs(date).format('YYYY-MM-DD') : '-'
     },
-    { 
-      title: 'Valid To', 
-      dataIndex: 'valid_to', 
-      key: 'valid_to', 
+    {
+      title: 'Đến ngày',
+      dataIndex: 'valid_to',
+      key: 'valid_to',
       width: 100,
       render: (date: string) => date ? dayjs(date).format('YYYY-MM-DD') : '-'
     },
-    { 
-      title: 'Status', 
-      dataIndex: 'is_active', 
-      key: 'is_active', 
-      width: 80,
+    {
+      title: 'Trạng thái',
+      dataIndex: 'is_active',
+      key: 'is_active',
+      width: 100,
       render: (active: boolean) => (
         <Tag color={active ? 'green' : 'red'}>
-          {active ? 'Active' : 'Inactive'}
+          {active ? 'Hoạt động' : 'Tạm dừng'}
         </Tag>
       )
     },
     {
-      title: 'Action',
+      title: 'Thao tác',
       key: 'action',
       fixed: 'right' as const,
       width: 150,
       render: (_: any, record: Voucher) => (
-        <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>Edit</Button>
-          <Popconfirm
-            title="Are you sure to delete this voucher?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button icon={<DeleteOutlined />} danger>Delete</Button>
-          </Popconfirm>
+        <Space>
+          <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+            Sửa
+          </Button>
+          <Button danger size="small" icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>
+            Xóa
+          </Button>
         </Space>
       ),
     },
   ];
 
   return (
-    <div>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={handleAdd}
-        style={{ marginBottom: 16 }}
-      >
-        Add Voucher
-      </Button>
+    <div style={{ padding: '24px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>Quản lý Voucher</h2>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={fetchVouchers} loading={loading}>
+            Làm mới
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+            Tạo mới
+          </Button>
+        </Space>
+      </div>
+
+      {/* Thống kê */}
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic title="Tổng voucher" value={vouchers.length} prefix={<SearchOutlined style={{ color: '#1890ff' }} />} />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic title="Kết quả lọc" value={filteredVouchers.length} prefix={<FilterOutlined style={{ color: '#52c41a' }} />} />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="Đang hoạt động"
+              value={vouchers.filter(v => v.is_active).length}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="Tổng lượt đã dùng"
+              value={vouchers.reduce((sum, v) => sum + (v.used_count || 0), 0)}
+              valueStyle={{ color: '#faad14' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Tìm kiếm & Bộ lọc */}
+      <Card style={{ marginBottom: 16 }}>
+        <Row gutter={16} align="middle">
+          <Col span={8}>
+            <Input.Search
+              placeholder="Tìm kiếm theo mã hoặc tên voucher..."
+              allowClear
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onSearch={setSearchText}
+            />
+          </Col>
+          <Col span={4}>
+            <Select
+              style={{ width: '100%' }}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { label: 'Tất cả', value: 'all' },
+                { label: 'Đang hoạt động', value: 'active' },
+                { label: 'Ngưng hoạt động', value: 'inactive' },
+              ]}
+            />
+          </Col>
+          <Col span={4}>
+            <Button onClick={resetFilters} icon={<FilterOutlined />}>
+              Đặt lại
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+
       <Table
         columns={columns}
-        dataSource={vouchers}
+        dataSource={filteredVouchers}
         rowKey="id"
         loading={loading}
-        bordered
         scroll={{ x: 1400 }}
+        pagination={{
+          ...pagination,
+          total: filteredVouchers.length,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} voucher`,
+          onChange: (page, pageSize) => setPagination({ current: page, pageSize: pageSize || 10 }),
+        }}
       />
       <Modal
-        title={editingVoucher ? 'Edit Voucher' : 'Add Voucher'}
+        title={editingVoucher ? 'Chỉnh sửa voucher' : 'Thêm voucher mới'}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}

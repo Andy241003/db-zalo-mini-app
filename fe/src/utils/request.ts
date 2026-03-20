@@ -12,13 +12,6 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor: inject Authorization and X-Tenant-Id headers
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('API Request:', {
-      method: config.method,
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`
-    });
-
     // Initialize headers if not present
     if (!config.headers) {
       config.headers = {};
@@ -27,7 +20,6 @@ axiosInstance.interceptors.request.use(
     const token = authStore.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Added Authorization header');
     }
 
     // Multi-tenant header injection
@@ -44,10 +36,7 @@ axiosInstance.interceptors.request.use(
 
     if (tenantId) {
       config.headers['X-Tenant-Id'] = tenantId.toString();
-      console.log('Added X-Tenant-Id header:', tenantId);
     }
-
-    console.log('Final request headers:', config.headers);
     return config;
   },
   (error) => {
@@ -59,11 +48,6 @@ axiosInstance.interceptors.request.use(
 // Response interceptor: normalize error shape
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('API Response success:', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
     return response.data;
   },
   (error) => {

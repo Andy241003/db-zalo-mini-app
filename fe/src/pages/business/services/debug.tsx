@@ -1,8 +1,6 @@
 import React from 'react';
 
 const TestServices: React.FC = () => {
-  console.log('TestServices component rendered');
-  
   return (
     <div style={{ padding: '20px' }}>
       <h1>Services Test Page</h1>

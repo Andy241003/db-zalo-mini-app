@@ -95,8 +95,6 @@ const HotelBrandView: React.FC = () => {
         },
       });
 
-      console.log('API Response:', response);
-
       if (response?.success && isMountedRef.current) {
         setBrandData(response.data);
       } else {
@@ -382,105 +380,107 @@ const HotelBrandView: React.FC = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card>
-        <div style={{ marginBottom: 24 }}>
-          <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
-            <Title level={2} style={{ margin: 0 }}>
-              <BgColorsOutlined /> Thông tin thương hiệu
-            </Title>
-            <Space>
-              <Button 
-                icon={<ReloadOutlined />} 
-                onClick={fetchBrandData}
-                loading={loading}
-              >
-                Làm mới
-              </Button>
-              <Button 
-                type="primary" 
-                icon={<EditOutlined />}
-                onClick={() => setEditMode(true)}
-              >
-                Chỉnh sửa
-              </Button>
-            </Space>
+      <div style={{ marginBottom: 24 }}>
+        <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
+          <Title level={2} style={{ margin: 0 }}>
+            Thông tin thương hiệu
+          </Title>
+          <Space>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={fetchBrandData}
+              loading={loading}
+            >
+              Làm mới
+            </Button>
+            <Button 
+              type="primary" 
+              icon={<EditOutlined />}
+              onClick={() => setEditMode(true)}
+            >
+              Chỉnh sửa
+            </Button>
           </Space>
-        </div>
+        </Space>
+      </div>
 
-        {loading ? (
+      {loading ? (
+        <Card>
           <div style={{ textAlign: 'center', padding: '50px' }}>
             <Spin size="large" />
             <div style={{ marginTop: 16 }}>
               <Text>Đang tải thông tin thương hiệu...</Text>
             </div>
           </div>
-        ) : brandData ? (
-          <Row gutter={[24, 24]}>
-            {/* Left Column - Main Info */}
-            <Col xs={24} lg={16}>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                {/* Brand Header */}
-                <Card className="mb-4">
-                  <Row gutter={16} align="middle">
-                    <Col flex="none">
-                      {brandData.logo_url ? (
-                        <Avatar 
-                          size={80} 
-                          src={brandData.logo_url} 
-                          style={{ backgroundColor: brandData.primary_color || '#1890ff' }}
-                        />
-                      ) : (
-                        <Avatar 
-                          size={80} 
-                          style={{ 
-                            backgroundColor: brandData.primary_color || '#1890ff',
-                            fontSize: '28px'
-                          }}
-                        >
-                          {brandData.hotel_name.charAt(0).toUpperCase()}
-                        </Avatar>
-                      )}
-                    </Col>
-                    <Col flex="auto">
-                      <Title level={3} style={{ margin: 0, color: brandData.primary_color }}>
-                        {brandData.hotel_name}
-                      </Title>
-                      <Text type="secondary" style={{ fontSize: '16px', fontStyle: 'italic' }}>
-                        {brandData.slogan ? `"${brandData.slogan}"` : 'Slogan chưa được cập nhật'}
-                      </Text>
-                      <Paragraph style={{ marginTop: 8, marginBottom: 0 }}>
-                        {brandData.description || 'Mô tả khách sạn chưa được cập nhật'}
-                      </Paragraph>
-                    </Col>
-                  </Row>
-                </Card>
+        </Card>
+      ) : brandData ? (
+        <Row gutter={[24, 24]}>
+          {/* Left Column - Main Info */}
+          <Col xs={24} lg={16}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {/* Brand Header */}
+              <Card className="mb-4">
+                <Row gutter={16} align="middle">
+                  <Col flex="none">
+                    {brandData.logo_url ? (
+                      <Avatar 
+                        size={80} 
+                        src={brandData.logo_url} 
+                        style={{ backgroundColor: brandData.primary_color || '#1890ff' }}
+                      />
+                    ) : (
+                      <Avatar 
+                        size={80} 
+                        style={{ 
+                          backgroundColor: brandData.primary_color || '#1890ff',
+                          fontSize: '28px'
+                        }}
+                      >
+                        {brandData.hotel_name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    )}
+                  </Col>
+                  <Col flex="auto">
+                    <Title level={3} style={{ margin: 0, color: brandData.primary_color }}>
+                      {brandData.hotel_name}
+                    </Title>
+                    <Text type="secondary" style={{ fontSize: '16px', fontStyle: 'italic' }}>
+                      {brandData.slogan ? `"${brandData.slogan}"` : 'Slogan chưa được cập nhật'}
+                    </Text>
+                    <Paragraph style={{ marginTop: 8, marginBottom: 0 }}>
+                      {brandData.description || 'Mô tả khách sạn chưa được cập nhật'}
+                    </Paragraph>
+                  </Col>
+                </Row>
+              </Card>
 
-                {/* Contact Info */}
-                {renderContactInfo()}
+              {/* Contact Info */}
+              {renderContactInfo()}
 
-                {/* Social Media */}
-                {renderSocialMedia()}
+              {/* Social Media */}
+              {renderSocialMedia()}
 
-                {/* Media Content */}
-                {renderMediaContent()}
+              {/* Media Content */}
+              {renderMediaContent()}
 
-                {/* Policy Links */}
-                {renderPolicyLinks()}
-              </Space>
-            </Col>
+              {/* Policy Links */}
+              {renderPolicyLinks()}
+            </Space>
+          </Col>
 
-            {/* Right Column - Additional Info */}
-            <Col xs={24} lg={8}>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                {/* Color Palette */}
-                {renderColorPalette()}
+          {/* Right Column - Additional Info */}
+          <Col xs={24} lg={8}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {/* Color Palette */}
+              {renderColorPalette()}
 
-                {/* Business Info */}
-                {renderBusinessInfo()}
-              </Space>
-            </Col>
-          </Row>
-        ) : (
+              {/* Business Info */}
+              {renderBusinessInfo()}
+            </Space>
+          </Col>
+        </Row>
+      ) : (
+        <Card>
           <Empty 
             description="Không có thông tin thương hiệu"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -489,8 +489,8 @@ const HotelBrandView: React.FC = () => {
               Thiết lập thương hiệu
             </Button>
           </Empty>
-        )}
-      </Card>
+        </Card>
+      )}
     </div>
   );
 };

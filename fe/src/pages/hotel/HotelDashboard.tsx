@@ -83,8 +83,7 @@ interface DashboardData {
 }
 
 const HotelDashboard: React.FC = () => {
-  console.log('🏨 HotelDashboard component is being rendered!');
-  
+
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

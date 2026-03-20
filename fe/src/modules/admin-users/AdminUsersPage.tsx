@@ -35,14 +35,6 @@ const AdminUsersPage: React.FC = () => {
   const updateUserMutation = useUpdateAdminUserMutation();
   const deleteUserMutation = useDeleteAdminUserMutation();
 
-  // Debug logging
-  console.log('Admin Users Page Debug:', {
-    usersData,
-    isLoading,
-    error,
-    queryParams
-  });
-
   // Handle table pagination and filtering
   const handleTableChange = (pagination: any, filters: any) => {
     setQueryParams(prev => ({

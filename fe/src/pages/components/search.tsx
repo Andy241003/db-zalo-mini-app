@@ -7,9 +7,7 @@ import { useLocale } from '@/locales';
 const SearchPage: FC = () => {
   const { formatMessage } = useLocale();
 
-  const onSearch = (values: any) => {
-    console.log(values);
-  };
+  const onSearch = (_values: any) => {};
 
   const nameLabel = formatMessage({ id: 'component.search.name' });
   const sexLabel = formatMessage({ id: 'component.search.sex' });

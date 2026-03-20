@@ -30,8 +30,6 @@ export const authAPI = {
     formData.append('username', data.username);
     formData.append('password', data.password);
     
-    console.log('Login request data:', data);
-    
     return request.post('/api/v1/auth/login', formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

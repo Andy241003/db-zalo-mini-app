@@ -9,7 +9,6 @@ export const useHotelBrands = (params?: any) => {
     queryKey: ['hotel-brands', params],
     queryFn: async () => {
       const data = await hotelBrandAPI.getAll(params);
-      console.log('Hotel brands response:', data);
       // Backend returns array, not paginated response
       return {
         items: Array.isArray(data) ? data : [],
@@ -47,7 +46,6 @@ export const useAdminUsers = (params?: any) => {
   return useQuery({
     queryKey: ['admin-users', params],
     queryFn: async () => {
-      console.log('🚫 useAdminUsers called - returning empty data since backend GET /admin-users/ endpoint doesn\'t exist');
       // Return empty data since backend GET endpoint doesn't exist
       return {
         items: [],
@@ -65,7 +63,6 @@ export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      console.log('🚫 OLD useDashboardStats (from hooks/useAPI.ts) called - this should NOT be used');
       try {
         // Fetch multiple data in parallel
         const [hotelBrandsData, adminUsersData] = await Promise.all([

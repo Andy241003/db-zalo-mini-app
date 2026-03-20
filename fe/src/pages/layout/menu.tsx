@@ -38,7 +38,6 @@ const MenuComponent: FC<MenuProps> = props => {
   const dispatch = useDispatch();
 
   const getIconByType = (iconType: string) => {
-    console.log('🚀 Getting icon for type:', iconType);
     switch (iconType) {
       case 'dashboard':
         return <DashboardOutlined />;

@@ -39,14 +39,11 @@ const ServicesPage: React.FC = () => {
 
   const fetchServices = async () => {
     if (!tenantId) {
-      console.log('No tenant ID, skipping fetch');
       return;
     }
-    console.log('Fetching services for tenant:', tenantId);
     setLoading(true);
     try {
       const res = await getServices(tenantId);
-      console.log('Services API response:', res);
       
       // Handle different response formats
       let servicesData = [];
@@ -61,7 +58,6 @@ const ServicesPage: React.FC = () => {
         servicesData = (res as any).data;
       }
       
-      console.log('Processed services data:', servicesData);
       setServices(servicesData);
       setFilteredServices(servicesData);
     } catch (error) {
@@ -75,23 +71,14 @@ const ServicesPage: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log('Services component mounted');
-    console.log('Current tenantId:', tenantId);
-    console.log('Auth data:', authStore.getState());
-    console.log('Is Hotel Admin:', authStore.isHotelAdmin());
-    console.log('Is Super Admin:', authStore.isSuperAdmin());
-    console.log('LocalStorage authState:', localStorage.getItem('authState'));
-    
+
     // If tenantId is null but we have token, try to extract from JWT
     if (!tenantId && authStore.getToken()) {
-      console.log('Attempting to extract tenantId from JWT token...');
       try {
         const token = authStore.getToken();
         if (token) {
           const payload = JSON.parse(atob(token.split('.')[1]));
-          console.log('JWT payload:', payload);
           if (payload.tenant_id) {
-            console.log('Found tenantId in JWT, updating auth store:', payload.tenant_id);
             authStore.setAuthData({ tenantId: payload.tenant_id });
           }
         }
@@ -192,16 +179,12 @@ const ServicesPage: React.FC = () => {
     ];
     setServices(mockServices);
     setFilteredServices(mockServices);
-    console.log('Added mock data:', mockServices);
   };
 
   const handleOk = async () => {
     try {
-      console.log('Starting form validation...');
       const values = await form.validateFields();
-      console.log('Form validation successful, values:', values);
-      console.log('Current tenantId for save:', tenantId);
-      
+
       if (!tenantId) {
         message.error('No tenant ID available. Please login again.');
         return;
@@ -211,9 +194,7 @@ const ServicesPage: React.FC = () => {
       
       let response;
       if (editingService) {
-        console.log('Updating service:', editingService.id, values);
-        console.log('Service data before update:', JSON.stringify(values, null, 2));
-        
+
         // Process data same as create
         const serviceData = {
           ...values,
@@ -221,13 +202,9 @@ const ServicesPage: React.FC = () => {
           duration_minutes: values.duration_minutes ? Number(values.duration_minutes) : undefined,
           requires_schedule: values.requires_schedule !== undefined ? Boolean(values.requires_schedule) : true
         };
-        
-        console.log('Processed update data:', JSON.stringify(serviceData, null, 2));
-        
+
         response = await updateService(tenantId!, editingService.id, serviceData as ServiceUpdate);
-        console.log('Update response:', response);
-        console.log('Update response type:', typeof response);
-        
+
         // For update, just assume success and refresh data
         message.success('Service updated successfully');
         setIsModalVisible(false);
@@ -236,9 +213,7 @@ const ServicesPage: React.FC = () => {
         await fetchServices();
         return; // Exit early for update
       } else {
-        console.log('Creating service with tenant_id:', tenantId, values);
-        console.log('Form values before sending:', JSON.stringify(values, null, 2));
-        
+
         // Validate required fields
         if (!values.service_name || !values.price) {
           throw new Error('Service name and price are required');
@@ -251,15 +226,9 @@ const ServicesPage: React.FC = () => {
           duration_minutes: values.duration_minutes ? Number(values.duration_minutes) : undefined,
           requires_schedule: values.requires_schedule !== undefined ? Boolean(values.requires_schedule) : true
         };
-        
-        console.log('Processed service data:', JSON.stringify(serviceData, null, 2));
-        
+
         response = await createService(tenantId!, serviceData as ServiceCreate);
-        console.log('Create response:', response);
-        console.log('Response type:', typeof response);
-        console.log('Response status:', response?.status);
-        console.log('Response message:', response?.message);
-        
+
         if (response && response.status) {
           message.success('Service created successfully');
           setIsModalVisible(false);
@@ -300,7 +269,6 @@ const ServicesPage: React.FC = () => {
   };
 
   const handleAdd = () => {
-    console.log('Adding service, current tenantId:', tenantId);
     setEditingService(null);
     form.resetFields();
     setIsModalVisible(true);
@@ -316,11 +284,8 @@ const ServicesPage: React.FC = () => {
     if (!tenantId) return;
     try {
       setLoading(true);
-      console.log('Deleting service:', id, 'with tenantId:', tenantId);
       const response = await deleteService(tenantId, id);
-      console.log('Delete response:', response);
-      console.log('Delete response type:', typeof response);
-      
+
       // For delete, we should always refresh data regardless of response
       message.success('Service deleted successfully');
       await fetchServices(); // Always refresh after delete

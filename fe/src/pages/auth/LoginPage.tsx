@@ -27,9 +27,7 @@ const LoginPage: React.FC = () => {
     
     setLoading(true);
     try {
-      console.log('Attempting login with:', values);
       const result = await authAPI.login(values);
-      console.log('Login result:', result);
       
       // Check if component is still mounted before updating state
       if (!mountedRef.current) return;
@@ -48,14 +46,6 @@ const LoginPage: React.FC = () => {
           role = 'SUPER_ADMIN';
         }
         
-        console.log('Login mapping:', {
-          username: values.username,
-          backendRole,
-          mappedRole: role,
-          userInfo: result.user_info,
-          tenantInfo: result.tenant_info
-        });
-        
         // Use authStore to handle login
         authStore.login({
           token: result.access_token,
@@ -67,8 +57,7 @@ const LoginPage: React.FC = () => {
         
         // Trigger auth state change for router
         window.dispatchEvent(new Event('auth-change'));
-        
-        console.log('Auth store updated, navigating to dashboard...');
+
         navigate('/dashboard');
       } else {
         message.error('Login failed: Invalid credentials');

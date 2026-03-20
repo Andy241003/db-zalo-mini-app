@@ -12,6 +12,6 @@ type Deps = readonly any[];
  */
 export default function useAsyncEffect(callback: Callback, deps: Deps = []) {
   useEffect(() => {
-    callback().catch(e => console.log('useAsyncEffect error:', e));
+    callback().catch(e => console.error('useAsyncEffect error:', e));
   }, deps);
 }

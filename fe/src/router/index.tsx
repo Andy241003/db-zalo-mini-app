@@ -21,8 +21,6 @@ const AppRouter: React.FC = () => {
     const handleStorageChange = () => {
       const authenticated = authStore.isAuthenticated();
       setIsAuthenticated(authenticated);
-      console.log('Router auth update - isAuthenticated:', authenticated);
-      console.log('Router auth update - role:', authStore.getRole());
     };
 
     // Check initially
@@ -49,8 +47,6 @@ const AppRouter: React.FC = () => {
       !route.roles || route.roles.includes(currentRole)
     );
   };
-
-  console.log('Router render - isAuthenticated:', isAuthenticated);
 
   return (
     <Router>

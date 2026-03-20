@@ -42,7 +42,6 @@ export function usePlansQuery(params: PlansQueryParams = {}) {
   return useQuery({
     queryKey: ['subscription-plans', { offset, limit: size, ...filters }],
     queryFn: async (): Promise<{ data: SubscriptionPlan[]; total: number }> => {
-      console.log('🚫 usePlansQuery called - returning empty data since backend endpoint doesn\'t exist');
       // Return empty data since backend endpoint doesn't exist
       return {
         data: [],

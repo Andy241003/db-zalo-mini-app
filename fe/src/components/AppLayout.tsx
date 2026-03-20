@@ -75,7 +75,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   };
 
   const handleLogout = () => {
-    console.log('Logging out...');
     authStore.logout();
     // Navigate will happen after page reload
   };
@@ -191,10 +190,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <Content
           style={{
             margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-            borderRadius: '8px',
+            padding: 0,
+            minHeight: 0,
+            background: 'transparent',
+            borderRadius: 0,
+            overflow: 'auto',
           }}
         >
           {children}

@@ -325,11 +325,10 @@ const RoomManagement: React.FC = () => {
   ];
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <Title level={2} style={{ margin: 0 }}>Quản lý Phòng</Title>
-          <Text type="secondary">Quản lý thông tin phòng nghỉ, giá cả, hình ảnh và đa phương tiện</Text>
         </div>
         <Button 
           type="primary" 

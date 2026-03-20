@@ -33,7 +33,6 @@ export class ZaloPhoneService {
 
     try {
       // Bước 1: Lấy phone_token và access_token song song
-      console.log('[Zalo] Calling zmp.getPhoneNumber() and zmp.getAccessToken()...');
       const zmp = window.zmp!;
       const [phoneResult, accessTokenResult] = await Promise.all([
         zmp.getPhoneNumber(),
@@ -45,8 +44,6 @@ export class ZaloPhoneService {
 
       if (!phoneToken) throw new Error('Không lấy được phone_token từ Zalo');
       if (!accessToken) throw new Error('Không lấy được access_token từ Zalo');
-
-      console.log('[Zalo] Got tokens, calling backend...');
 
       // Bước 2: Gửi token lên backend để lấy số điện thoại thật
       return await this.resolvePhone(phoneToken, accessToken, tenantId);
@@ -85,7 +82,6 @@ export class ZaloPhoneService {
     }
 
     const result = await response.json();
-    console.log('[Zalo] Backend response:', result);
     return result.number;
   }
 }

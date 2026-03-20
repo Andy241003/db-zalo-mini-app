@@ -8,8 +8,7 @@ export const apiLogin = async (
 ): Promise<{ status: boolean; message: string; result: LoginResult }> => {
   try {
     const resp: any = await authApi.login(data);
-    console.log('Login API response:', resp); // Debug log
-    
+
     // Backend trả về: { access_token, token_type, user_info, tenant_info }
     if (resp && resp.access_token) {
       return {

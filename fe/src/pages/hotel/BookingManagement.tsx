@@ -50,7 +50,6 @@ const BookingManagement: React.FC = () => {
     queryFn: async () => {
       try {
         const response = await request('get', `/booking-requests?tenant_id=${tenantId}`);
-        console.log('API Response:', response);
         return response;
       } catch (error) {
         console.error('API Error:', error);
@@ -259,11 +258,10 @@ const BookingManagement: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <Title level={2} style={{ margin: 0 }}>Quản lý Đặt phòng</Title>
-          <Text type="secondary">Quản lý và theo dõi các yêu cầu đặt phòng</Text>
         </div>
       </div>
 

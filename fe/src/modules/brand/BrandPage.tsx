@@ -34,17 +34,13 @@ const BrandPage: React.FC = () => {
 
   const queryClient = useQueryClient();
   const { tenantId } = useTenantContext();
-  
-  console.log('BrandPage - Current tenantId:', tenantId);
+
   
   // Fetch hotel brands with error handling
   const { data: hotelBrands, isLoading, error } = useHotelBrands({
     page: currentPage,
     page_size: pageSize,
   });
-
-  // console.log('Hotel brands data:', hotelBrands);
-  // console.log('Hotel brands error:', error);
 
   // Early return for loading state
   if (isLoading) {
@@ -150,7 +146,6 @@ const BrandPage: React.FC = () => {
         });
       } else {
         // Create - tenant_id sẽ được tự động thêm trong API call
-        console.log('Creating brand with data:', values);
         createMutation.mutate(values);
       }
     } catch (error) {

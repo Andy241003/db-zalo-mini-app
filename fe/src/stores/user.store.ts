@@ -10,7 +10,7 @@ const initialState: UserState = {
   ...getGlobalState(),
   noticeCount: 0,
   locale: (localStorage.getItem('locale')! || 'en_US') as Locale,
-  newUser: JSON.parse(localStorage.getItem('newUser')!) ?? true,
+  newUser: JSON.parse(localStorage.getItem('newUser')!) ?? false,
   logged: localStorage.getItem('t') ? true : false,
   menuList: [],
   username: localStorage.getItem('username') || '',
