@@ -125,22 +125,13 @@ export const getHotelMenuList = (): MenuList => {
         icon: 'gift',
         path: '/promotions',
       },
-      {
-        code: 'games',
-        label: {
-          zh_CN: '游戏管理',
-          en_US: 'Games',
-          vi_VN: 'Trò chơi',
-        },
-        icon: 'trophy',
-        path: '/games',
-      },
+
       {
         code: 'vouchers',
         label: {
-          zh_CN: '优惠券',
-          en_US: 'Vouchers',
-          vi_VN: 'Voucher',
+          zh_CN: '客户优惠',
+          en_US: "Customer's Promotion",
+          vi_VN: 'Ưu đãi khách hàng',
         },
         icon: 'tag',
         path: '/vouchers',
@@ -155,16 +146,7 @@ export const getHotelMenuList = (): MenuList => {
         icon: 'user',
         path: '/customers',
       },
-      {
-        code: 'bookings',
-        label: {
-          zh_CN: '预订管理',
-          en_US: 'Bookings',
-          vi_VN: 'Đặt phòng',
-        },
-        icon: 'calendar',
-        path: '/bookings',
-      },
+
     ];
 
     menuList.push(...hotelMenuItems);

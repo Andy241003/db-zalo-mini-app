@@ -1,226 +1,163 @@
-import React, { useState } from 'react';
-import {
-  Table, Button, Space, Card, Modal, Form, Input, InputNumber,
-  DatePicker, Switch, Popconfirm, Typography, Row, Col, Tag, Progress, Select
-} from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, PercentageOutlined } from '@ant-design/icons';
+import React, { useMemo } from 'react';
+import { Card, Col, Row, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { get, post, put, del } from '../../utils/request';
-import { message } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+
+import { get } from '../../utils/request';
 import { useTenantContext } from '../../hooks/useTenantContext';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
-interface Voucher {
+interface CustomerVoucher {
   id: number;
   tenant_id: number;
-  code: string;
-  title: string;
-  description?: string;
-  discount_type: 'percentage' | 'fixed';
-  discount_value: number;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  min_booking_amount?: number;
-  max_discount_amount?: number;
-  usage_limit?: number;
-  current_usage?: number;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
+  customer_id: number;
+  promotion_id?: number | null;
+  voucher_id?: number | null;
+  status?: 'assigned' | 'used' | 'expired' | string;
+  is_used?: boolean;
+  assigned_date?: string;
+  used_at?: string;
+  created_at?: string;
 }
 
+interface CustomerInfo {
+  id: number;
+  name?: string;
+  full_name?: string;
+  phone?: string;
+}
+
+interface PromotionInfo {
+  id: number;
+  title?: string;
+  discount_type?: string;
+  discount_value?: number;
+  max_usage?: number | null;
+  used_count?: number;
+  start_date?: string;
+  end_date?: string;
+  status?: string;
+}
+
+const statusColor = (status?: string) => {
+  if (status === 'used') return 'green';
+  if (status === 'expired') return 'red';
+  if (status === 'assigned') return 'blue';
+  return 'default';
+};
+
 const VouchersPage: React.FC = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
-  const [form] = Form.useForm();
-  const queryClient = useQueryClient();
   const { tenantId } = useTenantContext();
 
-  const { data: vouchers, isLoading, refetch } = useQuery({
-    queryKey: ['vouchers', tenantId],
-    queryFn: () => get<Voucher[]>('/api/v1/vouchers', { params: { tenant_id: tenantId } }),
+  const customerVouchersQuery = useQuery({
+    queryKey: ['customer-promotions', tenantId],
+    queryFn: () =>
+      get<CustomerVoucher[]>('/api/v1/customer-vouchers', {
+        params: { tenant_id: tenantId, limit: 500, skip: 0 },
+      }),
+    enabled: !!tenantId,
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: any) => post('/api/v1/vouchers', { ...data, tenant_id: tenantId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vouchers', tenantId] });
-      message.success('Voucher created successfully');
-      handleModalCancel();
-    },
-    onError: (error: any) => message.error(error.message),
+  const customersQuery = useQuery({
+    queryKey: ['customers', tenantId],
+    queryFn: () =>
+      get<CustomerInfo[]>('/api/v1/customers', {
+        params: { tenant_id: tenantId, limit: 500, skip: 0 },
+      }),
+    enabled: !!tenantId,
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => 
-      put(`/api/v1/vouchers/${id}`, { ...data, tenant_id: tenantId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vouchers', tenantId] });
-      message.success('Voucher updated successfully');
-      handleModalCancel();
-    },
-    onError: (error: any) => message.error(error.message),
+  const promotionsQuery = useQuery({
+    queryKey: ['promotions', tenantId],
+    queryFn: () =>
+      get<PromotionInfo[]>('/api/v1/promotions', {
+        params: { tenant_id: tenantId, limit: 500, skip: 0 },
+      }),
+    enabled: !!tenantId,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => del(`/api/v1/vouchers/${id}`, { params: { tenant_id: tenantId } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vouchers', tenantId] });
-      message.success('Voucher deleted successfully');
-    },
-    onError: (error: any) => message.error(error.message),
-  });
+  const loading =
+    customerVouchersQuery.isLoading || customersQuery.isLoading || promotionsQuery.isLoading;
 
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-    setEditingVoucher(null);
-    form.resetFields();
-  };
+  const customerMap = useMemo(() => {
+    const map = new Map<number, CustomerInfo>();
+    (customersQuery.data || []).forEach((c) => map.set(c.id, c));
+    return map;
+  }, [customersQuery.data]);
 
-  const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      // Format dates
-      if (values.start_date) {
-        values.start_date = values.start_date.format('YYYY-MM-DD');
-      }
-      if (values.end_date) {
-        values.end_date = values.end_date.format('YYYY-MM-DD');
-      }
-      
-      if (editingVoucher) {
-        updateMutation.mutate({ id: editingVoucher.id, data: values });
-      } else {
-        createMutation.mutate(values);
-      }
-    } catch (error) {
-      console.error('Form validation failed:', error);
-    }
-  };
+  const promotionMap = useMemo(() => {
+    const map = new Map<number, PromotionInfo>();
+    (promotionsQuery.data || []).forEach((p) => map.set(p.id, p));
+    return map;
+  }, [promotionsQuery.data]);
 
-  const generateVoucherCode = () => {
-    const code = 'VOUCHER' + Math.random().toString(36).substr(2, 6).toUpperCase();
-    form.setFieldsValue({ code });
-  };
+  const rows = useMemo(() => {
+    return (customerVouchersQuery.data || []).map((cv) => {
+      const customer = customerMap.get(cv.customer_id);
+      const promotion = cv.promotion_id ? promotionMap.get(cv.promotion_id) : undefined;
+      const customerName = customer?.full_name || customer?.name || `Customer #${cv.customer_id}`;
+      return {
+        ...cv,
+        customer_name: customerName,
+        customer_phone: customer?.phone || '-',
+        promotion_title: promotion?.title || `Promotion #${cv.promotion_id || '-'}`,
+        promotion_usage: `${promotion?.used_count || 0}/${promotion?.max_usage ?? '?'}`,
+      };
+    });
+  }, [customerMap, customerVouchersQuery.data, promotionMap]);
 
-  const columns: ColumnsType<Voucher> = [
+  const summary = useMemo(() => {
+    const total = rows.length;
+    const assigned = rows.filter((r) => (r.status || '').toLowerCase() === 'assigned').length;
+    const used = rows.filter((r) => (r.status || '').toLowerCase() === 'used' || r.is_used).length;
+    const expired = rows.filter((r) => (r.status || '').toLowerCase() === 'expired').length;
+    return { total, assigned, used, expired };
+  }, [rows]);
+
+  const columns: ColumnsType<any> = [
     {
-      title: 'Voucher Code',
-      dataIndex: 'code',
-      key: 'code',
-      render: (text: string, record: Voucher) => (
+      title: 'Customer',
+      key: 'customer',
+      render: (_, record) => (
         <div>
-          <div style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{text}</div>
-          <div style={{ fontSize: 12, color: '#666' }}>{record.title}</div>
+          <div style={{ fontWeight: 600 }}>{record.customer_name}</div>
+          <Text type="secondary">{record.customer_phone}</Text>
         </div>
       ),
     },
     {
-      title: 'Discount',
-      key: 'discount',
-      render: (_, record: Voucher) => (
-        <div style={{ textAlign: 'center' }}>
-          <PercentageOutlined style={{ color: '#1890ff' }} />
-          <div style={{ fontWeight: 'bold' }}>
-            {record.discount_type === 'percentage'
-              ? `${record.discount_value}%`
-              : `$${record.discount_value}`}
-          </div>
-          {record.max_discount_amount && (
-            <div style={{ fontSize: 12, color: '#666' }}>
-              Max: ${record.max_discount_amount}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: 'Valid Period',
-      key: 'period',
-      render: (_, record: Voucher) => (
+      title: "Customer's Promotion",
+      key: 'promotion',
+      render: (_, record) => (
         <div>
-          <div>{dayjs(record.start_date).format('MMM DD')} - {dayjs(record.end_date).format('MMM DD, YYYY')}</div>
-          <div style={{ fontSize: 12, color: dayjs().isAfter(record.end_date) ? 'red' : '#52c41a' }}>
-            {dayjs().isAfter(record.end_date) ? 'Expired' : 'Active'}
-          </div>
+          <div style={{ fontWeight: 600 }}>{record.promotion_title}</div>
+          <Space size={8}>
+            <Text type="secondary">ID: {record.promotion_id || '-'}</Text>
+            <Text type="secondary">Usage: {record.promotion_usage}</Text>
+          </Space>
         </div>
-      ),
-    },
-    {
-      title: 'Usage',
-      key: 'usage',
-      render: (_, record: Voucher) => {
-        if (!record.usage_limit) return <div style={{ textAlign: 'center' }}>Unlimited</div>;
-        const usage = record.current_usage || 0;
-        const percent = (usage / record.usage_limit) * 100;
-        return (
-          <div>
-            <div style={{ fontWeight: 'bold' }}>{usage} / {record.usage_limit}</div>
-            <div style={{ width: 80, height: 4, backgroundColor: '#f0f0f0', borderRadius: 2 }}>
-              <div 
-                style={{ 
-                  width: `${percent}%`, 
-                  height: '100%', 
-                  backgroundColor: percent > 80 ? '#ff4d4f' : '#1890ff',
-                  borderRadius: 2 
-                }} 
-              />
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      title: 'Type',
-      dataIndex: 'is_public',
-      key: 'is_public',
-      render: (isPublic: boolean) => (
-        <Tag color={isPublic ? 'blue' : 'orange'}>
-          {isPublic ? 'Public' : 'Private'}
-        </Tag>
       ),
     },
     {
       title: 'Status',
-      dataIndex: 'is_active',
-      key: 'is_active',
-      render: (isActive: boolean, record: Voucher) => {
-        const isExpired = dayjs().isAfter(record.end_date);
-        const color = isExpired ? 'error' : isActive ? 'success' : 'default';
-        const text = isExpired ? 'Expired' : isActive ? 'Active' : 'Inactive';
-        return <Tag color={color}>{text}</Tag>;
-      },
+      key: 'status',
+      render: (_, record) => (
+        <Tag color={statusColor(record.status)}>{(record.status || 'unknown').toUpperCase()}</Tag>
+      ),
     },
     {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record: Voucher) => (
-        <Space>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingVoucher(record);
-              form.setFieldsValue({
-                ...record,
-                start_date: dayjs(record.start_date),
-                end_date: dayjs(record.end_date),
-              });
-              setIsModalVisible(true);
-            }}
-          />
-          <Popconfirm
-            title="Delete voucher? This action cannot be undone."
-            onConfirm={() => deleteMutation.mutate(record.id)}
-          >
-            <Button type="text" icon={<DeleteOutlined />} danger />
-          </Popconfirm>
-        </Space>
-      ),
+      title: 'Assigned At',
+      dataIndex: 'assigned_date',
+      key: 'assigned_date',
+      render: (value?: string) => (value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-'),
+    },
+    {
+      title: 'Used At',
+      dataIndex: 'used_at',
+      key: 'used_at',
+      render: (value?: string) => (value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-'),
     },
   ];
 
@@ -229,158 +166,36 @@ const VouchersPage: React.FC = () => {
       <Card>
         <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
           <Col>
-            <Title level={3} style={{ margin: 0 }}>Voucher Management</Title>
+            <Title level={3} style={{ margin: 0 }}>
+              Customer&apos;s Promotion
+            </Title>
+            <Text type="secondary">Danh sách ưu đãi khách hàng</Text>
+          </Col>
+        </Row>
+
+        <Row gutter={12} style={{ marginBottom: 16 }}>
+          <Col>
+            <Tag color="default">Total: {summary.total}</Tag>
           </Col>
           <Col>
-            <Space>
-              <Button icon={<ReloadOutlined />} onClick={() => refetch()} />
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setIsModalVisible(true)}
-              >
-                Add Voucher
-              </Button>
-            </Space>
+            <Tag color="blue">Assigned: {summary.assigned}</Tag>
+          </Col>
+          <Col>
+            <Tag color="green">Used: {summary.used}</Tag>
+          </Col>
+          <Col>
+            <Tag color="red">Expired: {summary.expired}</Tag>
           </Col>
         </Row>
 
         <Table
-          columns={columns}
-          dataSource={vouchers || []}
           rowKey="id"
-          loading={isLoading}
+          loading={loading}
+          columns={columns}
+          dataSource={rows}
+          pagination={{ pageSize: 20 }}
         />
       </Card>
-
-      <Modal
-        title={editingVoucher ? 'Edit Voucher' : 'Create Voucher'}
-        open={isModalVisible}
-        onOk={handleSubmit}
-        onCancel={handleModalCancel}
-        width={600}
-        confirmLoading={createMutation.isPending || updateMutation.isPending}
-      >
-        <Form form={form} layout="vertical" initialValues={{ is_active: true, is_public: true, discount_type: 'percentage' }}>
-          <Row gutter={16}>
-            <Col span={16}>
-              <Form.Item
-                name="code"
-                label="Voucher Code"
-                rules={[{ required: true, message: 'Please enter voucher code' }]}
-              >
-                <Input placeholder="e.g., SUMMER2024" style={{ fontFamily: 'monospace' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label=" ">
-                <Button onClick={generateVoucherCode} block>
-                  Generate Code
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            name="title"
-            label="Title"
-            rules={[{ required: true, message: 'Please enter title' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item name="description" label="Description">
-            <Input.TextArea rows={3} />
-          </Form.Item>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="discount_type"
-                label="Discount Type"
-                rules={[{ required: true }]}
-              >
-                <Select
-                  options={[
-                    { label: 'Percentage', value: 'percentage' },
-                    { label: 'Fixed Amount', value: 'fixed' },
-                  ]}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="discount_value"
-                label="Discount Value"
-                rules={[{ required: true, message: 'Please enter discount value' }]}
-              >
-                <InputNumber
-                  min={0}
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="start_date"
-                label="Start Date"
-                rules={[{ required: true, message: 'Please select start date' }]}
-              >
-                <DatePicker style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="end_date"
-                label="End Date"
-                rules={[{ required: true, message: 'Please select end date' }]}
-              >
-                <DatePicker style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="min_booking_amount" label="Min Booking Amount">
-                <InputNumber
-                  min={0}
-                  style={{ width: '100%' }}
-                  addonBefore="$"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="max_discount_amount" label="Max Discount">
-                <InputNumber
-                  min={0}
-                  style={{ width: '100%' }}
-                  addonBefore="$"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="usage_limit" label="Usage Limit">
-                <InputNumber
-                  min={1}
-                  style={{ width: '100%' }}
-                  placeholder="Unlimited"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="is_public" valuePropName="checked" label="Public Voucher">
-                <Switch />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="is_active" valuePropName="checked" label="Active">
-                <Switch />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
     </div>
   );
 };

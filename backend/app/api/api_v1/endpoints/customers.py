@@ -173,21 +173,29 @@ def claim_promotion(
     Customer nhận ưu đãi (claim) trực tiếp từ promotion.
     FE gọi khi người dùng bấm "Lưu ưu đãi".
     """
+    today = datetime.date.today()
+
     # Kiểm tra customer
     cust = customer.get(db=db, id=item_id, tenant_id=tenant_id)
     if not cust:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    # Kiểm tra promotion tồn tại và còn hạn
+    # Kiểm tra promotion tồn tại và khóa bản ghi để tránh over-claim khi nhiều request đồng thời
     p = db.query(TblPromotions).filter(
         TblPromotions.id == promotion_id,
         TblPromotions.tenant_id == tenant_id,
         TblPromotions.deleted == 0
-    ).first()
+    ).with_for_update().first()
     if not p:
         raise HTTPException(status_code=404, detail="Promotion not found")
     if p.status != 'active':
         raise HTTPException(status_code=400, detail="Ưu đãi không còn hiệu lực")
+    if p.start_date and today < p.start_date:
+        raise HTTPException(status_code=400, detail="Ưu đãi chưa đến thời gian áp dụng")
+    if p.end_date and today > p.end_date:
+        raise HTTPException(status_code=400, detail="Ưu đãi đã hết hạn")
+    if p.max_usage is not None and (p.used_count or 0) >= p.max_usage:
+        raise HTTPException(status_code=400, detail="Ưu đãi đã đạt giới hạn lượt nhận")
 
     # Kiểm tra đã claim chưa
     existing = db.query(TblCustomerVouchers).filter(
@@ -198,7 +206,7 @@ def claim_promotion(
     if existing:
         raise HTTPException(status_code=400, detail="Bạn đã lưu ưu đãi này rồi")
 
-    # Tạo record
+    # Tạo record + tăng used_count
     cv = TblCustomerVouchers(
         tenant_id=tenant_id,
         customer_id=item_id,
@@ -207,6 +215,15 @@ def claim_promotion(
         is_used=False,
     )
     db.add(cv)
+
+    p.used_count = (p.used_count or 0) + 1
+    db.add(p)
+
     db.commit()
     db.refresh(cv)
-    return {"message": "Lưu ưu đãi thành công", "customer_voucher_id": cv.id}
+    return {
+        "message": "Lưu ưu đãi thành công",
+        "customer_voucher_id": cv.id,
+        "promotion_used_count": p.used_count,
+        "promotion_max_usage": p.max_usage,
+    }

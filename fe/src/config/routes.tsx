@@ -90,8 +90,8 @@ export const routes: RouteConfig[] = [
   },
   {
     path: '/vouchers',
-    element: GameManagement,
-    title: 'Trò chơi may mắn',
+    element: VouchersPage,
+    title: "Customer's Promotion",
     roles: ['HOTEL_ADMIN'],
   },
   {
@@ -177,8 +177,8 @@ export const routes: RouteConfig[] = [
   {
     path: '/vouchers',
     element: VouchersPage,
-    title: 'Voucher Management',
-    roles: ['HOTEL_ADMIN'], // Chỉ HOTEL_ADMIN quản lý vouchers
+    title: "Customer's Promotion",
+    roles: ['HOTEL_ADMIN'], // Chỉ HOTEL_ADMIN quản lý customer promotions
   },
   {
     path: '/customers',
